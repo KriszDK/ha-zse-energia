@@ -1,0 +1,166 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ZSE Energia (unofficial)",
+        "description": "Sign in with the e-mail account of your ZSE customer zone (zse.sk). Google/Facebook accounts are not supported.",
+        "data": {
+          "email": "E-mail",
+          "password": "Password"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Sign in again",
+        "description": "The ZSE portal rejected the stored password for {email}. Enter the current password.",
+        "data": {
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "E-mail or password was rejected.",
+      "cannot_connect": "Could not reach the ZSE portal.",
+      "portal_changed": "The ZSE portal answered in an unexpected way (it may have changed). See the log.",
+      "unknown": "Unexpected error. See the log."
+    },
+    "abort": {
+      "already_configured": "This ZSE account is already configured.",
+      "wrong_account": "The e-mail belongs to a different ZSE account than the one configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "ZSE Energia options",
+        "data": {
+          "scan_hours": "Update interval (hours)",
+          "hdo_winter_time": "My HDO device keeps winter time all year (tariff changes one hour later in summer)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "next_payment_date": {
+        "name": "Next payment due"
+      },
+      "next_payment_amount": {
+        "name": "Next payment amount"
+      },
+      "next_invoice_date": {
+        "name": "Next advance invoice"
+      },
+      "advance_amount": {
+        "name": "Advance payment"
+      },
+      "payment_method": {
+        "name": "Payment method"
+      },
+      "tariff": {
+        "name": "Tariff"
+      },
+      "last_settlement_amount": {
+        "name": "Last settlement amount"
+      },
+      "last_settlement_date": {
+        "name": "Last settlement date"
+      },
+      "next_settlement": {
+        "name": "Next annual settlement"
+      },
+      "last_payment_date": {
+        "name": "Last payment received"
+      },
+      "consumption_latest_month": {
+        "name": "Consumption, latest month"
+      },
+      "consumption_monthly_average": {
+        "name": "Consumption, 12-month average"
+      },
+      "to_pay": {
+        "name": "Amount to pay"
+      },
+      "overdue_amount": {
+        "name": "Overdue amount"
+      },
+      "overpayment": {
+        "name": "Overpayment"
+      },
+      "advance_due_day": {
+        "name": "Advance due day of month"
+      },
+      "contract_valid_from": {
+        "name": "Contract valid from"
+      },
+      "distribution_tariff": {
+        "name": "Distribution tariff"
+      },
+      "tariffication": {
+        "name": "Tariffication"
+      },
+      "hdo_code": {
+        "name": "HDO code"
+      },
+      "phases": {
+        "name": "Phases"
+      },
+      "circuit_breaker": {
+        "name": "Main circuit breaker"
+      },
+      "distributor": {
+        "name": "Distributor"
+      },
+      "paid_this_year": {
+        "name": "Paid this year"
+      },
+      "refunds_this_year": {
+        "name": "Refunds this year"
+      },
+      "paid_total": {
+        "name": "Paid in total"
+      },
+      "refunds_total": {
+        "name": "Refunds in total"
+      },
+      "net_paid_total": {
+        "name": "Net paid in total"
+      },
+      "ui_language": {
+        "name": "Dashboard language"
+      },
+      "next_tariff_change": {
+        "name": "Next tariff change"
+      },
+      "high_tariff_hours_today": {
+        "name": "High tariff hours today"
+      },
+      "hdo_data": {
+        "name": "Tariff table (HDO) data",
+        "state": {
+          "up_to_date": "Up to date",
+          "built_in": "Built-in copy",
+          "error": "Update failed"
+        }
+      }
+    },
+    "binary_sensor": {
+      "overdue": {
+        "name": "Payment overdue"
+      },
+      "payment_pending": {
+        "name": "Invoice awaiting payment"
+      },
+      "e_invoice": {
+        "name": "E-invoice enabled"
+      },
+      "low_tariff": {
+        "name": "Low tariff active"
+      }
+    },
+    "calendar": {
+      "tariff_calendar": {
+        "name": "Low / high tariff"
+      }
+    }
+  }
+}

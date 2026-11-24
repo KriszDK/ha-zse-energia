@@ -1,0 +1,15 @@
+{
+  "domain": "zse_energia",
+  "name": "ZSE Energia (unofficial)",
+  "codeowners": ["@KriszDK"],
+  "config_flow": true,
+  "dependencies": [
+    "recorder"
+  ],
+  "documentation": "https://github.com/KriszDK/ha-zse-energia",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/KriszDK/ha-zse-energia/issues",
+  "requirements": [],
+  "version": "0.4.3"
+}

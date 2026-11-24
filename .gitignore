@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+*personal*
+.DS_Store

@@ -1,0 +1,200 @@
+"""Texts for the ready-made dashboard, in the language of the Home Assistant system settings.
+
+A dashboard cannot translate its own text, so the integration serves the texts instead: the
+"Dashboard language" sensor carries the dictionary of the active language as the attribute ``t``,
+and the dashboard's Markdown cards read their labels from it. Unsupported languages fall back to English.
+No Home Assistant imports here, so it can be tested on its own.
+"""
+from __future__ import annotations
+
+DEFAULT_LANGUAGE = "en"
+NB = " "  # non-breaking space: keeps "1 234,50 €" on one line
+
+TEXTS: dict[str, dict[str, str]] = {
+    "en": {
+        "t_now": "Now",
+        "t_today": "Today", "t_tomorrow": "Tomorrow",
+        "cal_low": "Low tariff",
+        "cal_high": "High tariff",
+        "h_tariff": "Electricity tariff now",
+        "t_low": "Low tariff",
+        "t_high": "High tariff",
+        "t_until": "until",
+        "t_high_today": "High tariff today",
+        "t_low_today": "Low tariff today",
+        "t_hours": "High tariff hours today",
+        "t_program": "HDO program",
+        "t_data": "Tariff table",
+        "t_none": "none",
+        "t_up_to_date": "up to date",
+        "t_built_in": "built-in copy",
+        "t_error": "update failed (using the previous data)",
+        "ts": ",", "ds": ".", "nb": NB,
+        "yes": "yes", "no": "no",
+        "h_next": "Next payment", "h_settle": "Settlement", "h_years": "This year and last year",
+        "h_charts": "Year by year", "h_cons": "Consumption", "h_table": "Yearly table (EUR)",
+        "h_totals": "Since the first invoice", "h_billing": "Payments and billing",
+        "h_contract": "Contract and technical data",
+        "this_label": "this year so far", "last_label": "last year",
+        "net_caption": "paid net (payments minus refunds)",
+        "adv": "Monthly advances", "extra": "Settlement surcharge and other payments",
+        "refund": "Refunded to you",
+        "years_note": "Net = what you actually paid: all payments minus everything refunded to you.",
+        "notfound": "The ZSE sensors were not found (is the integration loaded?).",
+        "c_pay_year": "Payments, refunds and net per year (click a legend item to show/hide it)",
+        "c_cons_year": "Consumption per year (kWh)",
+        "c_cons_month": "Consumption per month (kWh, last 3 years)",
+        "t_intro": (
+            "How much you paid ZSE each year, and how much came back to you:\n\n"
+            "- **Paid**: everything you paid in that year: the monthly advances plus any settlement surcharge.\n"
+            "- **Refunded**: what ZSE paid back to you after the annual settlement (overpayment).\n"
+            "- **Net**: Paid minus Refunded. This is what electricity really cost you in cash that year."
+        ),
+        "c_year": "Year", "c_paid": "Paid", "c_ref": "Refunded", "c_net": "Net (cost)",
+        "ongoing": "ongoing", "partial": "from the start of the data",
+        "t_avg": f"**On average {{y}}{NB}€ per year ≈ {{m}}{NB}€ per month** (last {{n}} full years)",
+        "t_note": (
+            "A refund arrives after the annual settlement, so a year's net is the cash that moved in that "
+            "year, not exactly the price of that year's consumption."
+        ),
+        "l_pay_caption": "next payment due", "l_open": "Open amount", "l_overdue": "Overdue",
+        "l_advance": "Monthly advance", "l_method": "Payment method",
+        "l_settle_caption": "next annual settlement", "l_last_settle": "Last settlement", "l_tariff": "Tariff",
+        "l_settle_note": "A negative amount means money back to you (overpayment).",
+        "d_paid_total": "Paid in total", "d_refunds_total": "Refunds in total", "d_net_total": "Net paid in total",
+        "d_paid_year": "Paid this year", "d_refunds_year": "Refunds this year", "d_overpay": "Overpayment",
+        "d_last_pay": "Last payment received", "d_next_inv": "Next advance invoice",
+        "d_due_day": "Advance due day of month", "d_pending": "Invoice awaiting payment",
+        "d_overdue_flag": "Payment overdue", "d_cons_last": "Consumption, latest month",
+        "d_cons_avg": "Consumption, 12-month average", "d_valid": "Contract valid from",
+        "d_distributor": "Distributor", "d_dist_tariff": "Distribution tariff", "d_tariffication": "Tariffication",
+        "d_hdo": "HDO code", "d_phases": "Phases", "d_breaker": "Main circuit breaker",
+        "d_einvoice": "E-invoice enabled",
+    },
+    "hu": {
+        "t_now": "Most",
+        "t_today": "Ma", "t_tomorrow": "Holnap",
+        "cal_low": "Alacsony tarifa",
+        "cal_high": "Magas tarifa",
+        "h_tariff": "Áramtarifa most",
+        "t_low": "Alacsony tarifa",
+        "t_high": "Magas tarifa",
+        "t_until": "eddig:",
+        "t_high_today": "Magas tarifa ma",
+        "t_low_today": "Alacsony tarifa ma",
+        "t_hours": "Magas tarifás órák ma",
+        "t_program": "HDO program",
+        "t_data": "Tarifatábla",
+        "t_none": "nincs",
+        "t_up_to_date": "naprakész",
+        "t_built_in": "beépített másolat",
+        "t_error": "a frissítés sikertelen (az előző adatok szerint működik)",
+        "ts": NB, "ds": ",", "nb": NB,
+        "yes": "igen", "no": "nem",
+        "h_next": "Következő fizetés", "h_settle": "Elszámolás", "h_years": "Idén és tavaly",
+        "h_charts": "Évről évre", "h_cons": "Fogyasztás", "h_table": "Éves táblázat (EUR)",
+        "h_totals": "Az első számla óta", "h_billing": "Fizetések és számlázás",
+        "h_contract": "Szerződés és műszaki adatok",
+        "this_label": "idén, eddig", "last_label": "tavaly",
+        "net_caption": "nettó kifizetve (befizetések mínusz visszautalások)",
+        "adv": "Havi előlegek", "extra": "Elszámolási pótlék és egyéb befizetés", "refund": "Visszakaptál",
+        "years_note": "Nettó = amit ténylegesen kifizettél: az összes befizetés mínusz minden, ami visszajött neked.",
+        "notfound": "A ZSE szenzorok nem találhatók (be van töltve az integráció?).",
+        "c_pay_year": "Befizetések, visszautalások és nettó évente (a jelmagyarázatra kattintva ki/be kapcsolható)",
+        "c_cons_year": "Fogyasztás évente (kWh)",
+        "c_cons_month": "Fogyasztás havonta (kWh, utolsó 3 év)",
+        "t_intro": (
+            "Itt látod évenként, mennyit fizettél a ZSE-nek, és mennyit kaptál vissza:\n\n"
+            "- **Befizetés**: amit abban az évben kifizettél: a havi előlegek és az esetleges elszámolási pótlék együtt.\n"
+            "- **Visszakaptál**: amit az éves elszámolás után a ZSE visszautalt neked (túlfizetés).\n"
+            "- **Nettó (költség)**: Befizetés mínusz Visszakaptál. Ez az, amibe az áram abban az évben ténylegesen került."
+        ),
+        "c_year": "Év", "c_paid": "Befizetés", "c_ref": "Visszakaptál", "c_net": "Nettó (költség)",
+        "ongoing": "folyamatban", "partial": "az adatok kezdetétől",
+        "t_avg": f"**Átlagosan {{y}}{NB}€ évente ≈ {{m}}{NB}€ havonta** (az utolsó {{n}} teljes év alapján)",
+        "t_note": (
+            "A visszautalás az éves elszámolás után érkezik, ezért az adott év nettó összege az abban az évben "
+            "mozgott pénz, nem pontosan az adott év fogyasztásának az ára."
+        ),
+        "l_pay_caption": "következő fizetési határidő", "l_open": "Nyitott összeg", "l_overdue": "Lejárt",
+        "l_advance": "Havi előleg", "l_method": "Fizetési mód",
+        "l_settle_caption": "következő éves elszámolás", "l_last_settle": "Utolsó elszámolás", "l_tariff": "Tarifa",
+        "l_settle_note": "A negatív összeg azt jelenti, hogy pénzt kaptál vissza (túlfizetés).",
+        "d_paid_total": "Összes befizetés", "d_refunds_total": "Összes visszautalás",
+        "d_net_total": "Nettó befizetés összesen", "d_paid_year": "Befizetés idén",
+        "d_refunds_year": "Visszautalás idén", "d_overpay": "Túlfizetés",
+        "d_last_pay": "Utolsó beérkezett fizetés", "d_next_inv": "Következő előlegszámla",
+        "d_due_day": "Előleg esedékességi napja (hó napja)", "d_pending": "Fizetésre váró számla",
+        "d_overdue_flag": "Lejárt tartozás", "d_cons_last": "Fogyasztás, legutóbbi hónap",
+        "d_cons_avg": "Fogyasztás, 12 havi átlag", "d_valid": "Szerződés érvényes ettől",
+        "d_distributor": "Elosztó", "d_dist_tariff": "Elosztási tarifa", "d_tariffication": "Tarifikáció",
+        "d_hdo": "HDO kód", "d_phases": "Fázisok", "d_breaker": "Főbiztosíték",
+        "d_einvoice": "E-számla bekapcsolva",
+    },
+    "sk": {
+        "t_now": "Teraz",
+        "t_today": "Dnes", "t_tomorrow": "Zajtra",
+        "cal_low": "Nízka tarifa",
+        "cal_high": "Vysoká tarifa",
+        "h_tariff": "Tarifa elektriny teraz",
+        "t_low": "Nízka tarifa",
+        "t_high": "Vysoká tarifa",
+        "t_until": "do",
+        "t_high_today": "Vysoká tarifa dnes",
+        "t_low_today": "Nízka tarifa dnes",
+        "t_hours": "Hodiny vysokej tarify dnes",
+        "t_program": "Program HDO",
+        "t_data": "Tarifná tabuľka",
+        "t_none": "žiadna",
+        "t_up_to_date": "aktuálna",
+        "t_built_in": "vstavaná kópia",
+        "t_error": "aktualizácia zlyhala (používajú sa predchádzajúce údaje)",
+        "ts": NB, "ds": ",", "nb": NB,
+        "yes": "áno", "no": "nie",
+        "h_next": "Najbližšia platba", "h_settle": "Vyúčtovanie", "h_years": "Tento a minulý rok",
+        "h_charts": "Rok po roku", "h_cons": "Spotreba", "h_table": "Ročná tabuľka (EUR)",
+        "h_totals": "Od prvej faktúry", "h_billing": "Platby a fakturácia",
+        "h_contract": "Zmluva a technické údaje",
+        "this_label": "tento rok doteraz", "last_label": "minulý rok",
+        "net_caption": "zaplatené netto (platby mínus vrátené)",
+        "adv": "Mesačné zálohy", "extra": "Doplatok z vyúčtovania a iné platby", "refund": "Vrátené vám",
+        "years_note": "Netto = čo ste skutočne zaplatili: všetky platby mínus všetko, čo sa vám vrátilo.",
+        "notfound": "Senzory ZSE sa nenašli (je integrácia načítaná?).",
+        "c_pay_year": "Platby, vrátenia a netto za rok (kliknutím na legendu zobrazíte/skryjete)",
+        "c_cons_year": "Spotreba za rok (kWh)",
+        "c_cons_month": "Spotreba za mesiac (kWh, posledné 3 roky)",
+        "t_intro": (
+            "Tu vidíte po rokoch, koľko ste zaplatili ZSE a koľko sa vám vrátilo:\n\n"
+            "- **Platby**: všetko, čo ste v danom roku zaplatili: mesačné zálohy a prípadný doplatok z vyúčtovania.\n"
+            "- **Vrátené**: čo vám ZSE vrátila po ročnom vyúčtovaní (preplatok).\n"
+            "- **Netto (náklad)**: Platby mínus Vrátené. Toľko vás elektrina v danom roku skutočne stála."
+        ),
+        "c_year": "Rok", "c_paid": "Platby", "c_ref": "Vrátené", "c_net": "Netto (náklad)",
+        "ongoing": "prebieha", "partial": "od začiatku dát",
+        "t_avg": f"**V priemere {{y}}{NB}€ ročne ≈ {{m}}{NB}€ mesačne** (posledných {{n}} plných rokov)",
+        "t_note": (
+            "Preplatok sa vracia až po ročnom vyúčtovaní, preto netto za rok je pohyb peňazí v danom roku, "
+            "nie presne cena spotreby toho roka."
+        ),
+        "l_pay_caption": "najbližší termín platby", "l_open": "Otvorená suma", "l_overdue": "Po splatnosti",
+        "l_advance": "Mesačná záloha", "l_method": "Spôsob platby",
+        "l_settle_caption": "ďalšie ročné vyúčtovanie", "l_last_settle": "Posledné vyúčtovanie", "l_tariff": "Tarifa",
+        "l_settle_note": "Záporná suma znamená vrátenie peňazí vám (preplatok).",
+        "d_paid_total": "Zaplatené spolu", "d_refunds_total": "Vrátené spolu",
+        "d_net_total": "Zaplatené netto spolu", "d_paid_year": "Zaplatené tento rok",
+        "d_refunds_year": "Vrátené tento rok", "d_overpay": "Preplatok",
+        "d_last_pay": "Posledná prijatá platba", "d_next_inv": "Ďalšia zálohová faktúra",
+        "d_due_day": "Deň splatnosti zálohy (v mesiaci)", "d_pending": "Faktúra čaká na úhradu",
+        "d_overdue_flag": "Platba po splatnosti", "d_cons_last": "Spotreba, posledný mesiac",
+        "d_cons_avg": "Spotreba, 12-mesačný priemer", "d_valid": "Zmluva platná od",
+        "d_distributor": "Distribútor", "d_dist_tariff": "Distribučná sadzba", "d_tariffication": "Tarifikácia",
+        "d_hdo": "Kód HDO", "d_phases": "Fázy", "d_breaker": "Hlavný istič",
+        "d_einvoice": "Elektronická faktúra zapnutá",
+    },
+}
+
+
+def pick_language(language: str | None) -> str:
+    """Home Assistant language ("hu", "sk-SK", ...) -> a supported code, English if unsupported."""
+    code = (language or "").replace("_", "-").split("-")[0].lower()
+    return code if code in TEXTS else DEFAULT_LANGUAGE

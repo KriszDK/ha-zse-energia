@@ -1,0 +1,359 @@
+# ZSE Energia - hotový dashboard (slovensky), rozloženie "sections", vyžaduje Home Assistant 2024.3 alebo novší.
+#
+# Použitie
+#   1. Nahraďte všetky  __ZU__  číslom svojho zmluvného účtu (variabilný symbol na faktúrach,
+#      10 číslic). Je súčasťou ID štatistík, napr. zse_energia:advances_paid_6300000001.
+#      PowerShell:  (Get-Content zse_dashboard.sk.yaml) -replace '__ZU__','6300000001' | Set-Content zse_moj.yaml
+#   2. Nastavenia -> Dashboardy -> Pridať dashboard -> Nový dashboard od nuly -> otvorte ho ->
+#      ceruzka -> tri bodky -> "Raw configuration editor" a vložte celý súbor.
+#
+# Grafy čítajú dlhodobé ŠTATISTIKY (zapisuje ich integrácia), preto ukazujú celú ~15-ročnú históriu.
+# Markdown karty si senzory integrácie nájdu samy (atribút "zse_key"), ID entít netreba upravovať.
+#
+# Ak je graf štatistík prázdny: Vývojárske nástroje -> Štatistiky -> hľadajte riadky "zse_energia:"
+# (objavia sa minútu po prvej aktualizácii integrácie).
+title: ZSE
+views:
+  - title: Platby
+    path: zse-payments
+    icon: mdi:cash-multiple
+    type: sections
+    max_columns: 2
+    sections:
+      # ================================================================== status and this/last year
+      - type: grid
+        cards:
+          - type: heading
+            heading: Najbližšia platba
+            heading_style: title
+            icon: mdi:calendar-clock
+          - type: markdown
+            content: |
+              {% macro m2(v) -%}{{ '{:,.2f}'.format(v | float(0)) | replace(',', '#') | replace('.', ',') | replace('#', ' ') }}{%- endmacro %}
+              {% macro m0(v) -%}{{ '{:,.0f}'.format(v | float(0)) | replace(',', '#') | replace('#', ' ') }}{%- endmacro %}
+              {% set ids = integration_entities('zse_energia') %}
+              {% macro val(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}
+              {%- set st = states(m[0]) -%}
+              {%- set u = state_attr(m[0], 'unit_of_measurement') -%}
+              {%- if u and is_number(st) -%}{{ m0(st) }} {{ u }}{%- else -%}{{ st }}{%- endif -%}
+              {%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro eur(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}{{ m2(states(m[0])) }} €{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro yn(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) in ['on', 'off'] -%}{{ 'áno' if states(m[0]) == 'on' else 'nie' }}{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              ## {{ val('next_payment_date') }}
+              ### {{ eur('next_payment_amount') }}
+              *najbližší termín platby*
+
+              - Otvorená suma: **{{ eur('to_pay') }}**
+              - Po splatnosti: **{{ eur('overdue') }}**
+              - Mesačná záloha: **{{ eur('advance_amount') }}**
+              - Spôsob platby: **{{ val('payment_method') }}**
+          - type: heading
+            heading: Vyúčtovanie
+            heading_style: title
+            icon: mdi:file-document-check
+          - type: markdown
+            content: |
+              {% macro m2(v) -%}{{ '{:,.2f}'.format(v | float(0)) | replace(',', '#') | replace('.', ',') | replace('#', ' ') }}{%- endmacro %}
+              {% macro m0(v) -%}{{ '{:,.0f}'.format(v | float(0)) | replace(',', '#') | replace('#', ' ') }}{%- endmacro %}
+              {% set ids = integration_entities('zse_energia') %}
+              {% macro val(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}
+              {%- set st = states(m[0]) -%}
+              {%- set u = state_attr(m[0], 'unit_of_measurement') -%}
+              {%- if u and is_number(st) -%}{{ m0(st) }} {{ u }}{%- else -%}{{ st }}{%- endif -%}
+              {%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro eur(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}{{ m2(states(m[0])) }} €{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro yn(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) in ['on', 'off'] -%}{{ 'áno' if states(m[0]) == 'on' else 'nie' }}{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              ## {{ val('next_settlement') }}
+              *ďalšie ročné vyúčtovanie*
+
+              - Posledné vyúčtovanie: **{{ eur('last_settlement_amount') }}** ({{ val('last_settlement_date') }})
+              - Tarifa: **{{ val('tariff') }}**
+
+              *Záporná suma znamená vrátenie peňazí vám (preplatok).*
+          - type: heading
+            heading: Tento a minulý rok
+            heading_style: title
+            icon: mdi:chart-box
+          - type: markdown
+            content: |
+              {% macro m2(v) -%}{{ '{:,.2f}'.format(v | float(0)) | replace(',', '#') | replace('.', ',') | replace('#', ' ') }}{%- endmacro %}
+              {% macro m0(v) -%}{{ '{:,.0f}'.format(v | float(0)) | replace(',', '#') | replace('#', ' ') }}{%- endmacro %}
+              {% set m = integration_entities('zse_energia') | select('is_state_attr', 'zse_history', true) | list %}
+              {% macro blk(ys, year, label) -%}
+              {%- set r = ys | selectattr('year', 'eq', year) | list -%}
+              ### {{ year }} · {{ label }}
+              {% if r -%}
+              {%- set y = r[0] -%}
+              ## {{ m2(y.net) }} €
+              *zaplatené netto (platby mínus vrátené)*
+              - Mesačné zálohy: {{ m2(y.advances) }} €
+              - Doplatok z vyúčtovania a iné platby: {{ m2(y.settlements + y.other) }} €
+              - Vrátené vám: {{ m2(y.refunds) }} €
+              {%- else -%}
+              –
+              {%- endif -%}
+              {%- endmacro %}
+              {% if m %}
+              {% set ys = state_attr(m[0], 'yearly') or [] %}
+              {{ blk(ys, now().year, 'tento rok doteraz') }}
+
+              {{ blk(ys, now().year - 1, 'minulý rok') }}
+
+              *Netto = čo ste skutočne zaplatili: všetky platby mínus všetko, čo sa vám vrátilo.*
+              {% else %}
+              Senzory ZSE sa nenašli (je integrácia načítaná?).
+              {% endif %}
+
+      # ================================================================== charts
+      - type: grid
+        cards:
+          - type: heading
+            heading: Rok po roku
+            heading_style: title
+            icon: mdi:chart-bar
+          - type: statistics-graph
+            title: Platby, vrátenia a netto za rok (kliknutím na legendu zobrazíte/skryjete)
+            chart_type: bar
+            period: year
+            days_to_show: 7000
+            stat_types:
+              - change
+            entities:
+              - entity: zse_energia:advances_paid___ZU__
+                name: Zaplatené zálohy
+                color: '#3d7ee0'
+              - entity: zse_energia:settlements_paid___ZU__
+                name: Doplatky z vyúčtovania
+                color: '#e0803d'
+              - entity: zse_energia:other_paid___ZU__
+                name: Ostatné platby
+                color: '#9b9b9b'
+              - entity: zse_energia:refunds_received___ZU__
+                name: Vrátenia
+                color: '#2e9e5b'
+              - entity: zse_energia:net_paid___ZU__
+                name: Netto platby
+                color: '#7a4de0'
+          - type: heading
+            heading: Spotreba
+            heading_style: title
+            icon: mdi:flash
+          - type: statistics-graph
+            title: Spotreba za rok (kWh)
+            chart_type: bar
+            period: year
+            days_to_show: 3000
+            stat_types:
+              - change
+            entities:
+              - entity: zse_energia:consumption___ZU__
+                name: Spotreba
+                color: '#e0c23d'
+          - type: statistics-graph
+            title: Spotreba za mesiac (kWh, posledné 3 roky)
+            chart_type: bar
+            period: month
+            days_to_show: 1100
+            stat_types:
+              - change
+            entities:
+              - entity: zse_energia:consumption___ZU__
+                name: Spotreba
+                color: '#e0c23d'
+
+  # ==================================================================== second view: yearly table
+  - title: Ročná tabuľka
+    path: zse-table
+    icon: mdi:table
+    type: sections
+    max_columns: 2
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Ročná tabuľka (EUR)
+            heading_style: title
+            icon: mdi:table
+          - type: markdown
+            content: |
+              {% macro m2(v) -%}{{ '{:,.2f}'.format(v | float(0)) | replace(',', '#') | replace('.', ',') | replace('#', ' ') }}{%- endmacro %}
+              {% macro m0(v) -%}{{ '{:,.0f}'.format(v | float(0)) | replace(',', '#') | replace('#', ' ') }}{%- endmacro %}
+              {% set m = integration_entities('zse_energia') | select('is_state_attr', 'zse_history', true) | list %}
+              {% if m %}
+              {% set e = m[0] %}
+              {% set ys = state_attr(e, 'yearly') or [] %}
+              {% set since = (state_attr(e, 'since') or '') | string %}
+              {% set done = ys | selectattr('year', 'lt', now().year) | list %}
+              {% set recent = done[-5:] %}
+              Tu vidíte po rokoch, koľko ste zaplatili ZSE a koľko sa vám vrátilo:
+              
+              - **Platby**: všetko, čo ste v danom roku zaplatili: mesačné zálohy a prípadný doplatok z vyúčtovania.
+              - **Vrátené**: čo vám ZSE vrátila po ročnom vyúčtovaní (preplatok).
+              - **Netto (náklad)**: Platby mínus Vrátené. Toľko vás elektrina v danom roku skutočne stála.
+
+              | Rok | Platby | Vrátené | Netto (náklad) |
+              |---|--:|--:|--:|
+              {% for y in ys | reverse -%}
+              | {{ y.year }}{% if y.year == now().year %} *(prebieha)*{% elif ys and y.year == ys[0].year and since[5:] != '01-01' %} *(od začiatku dát)*{% endif %} | {{ m2(y.paid) }} € | {{ m2(y.refunds) }} € | **{{ m2(y.net) }} €** |
+              {% endfor %}
+              {% if recent %}
+              {% set n = recent | length %}
+              {% set avg_y = (recent | map(attribute='net') | sum) / n %}
+              **V priemere {{ m0(avg_y) }} € ročne ≈ {{ m0(avg_y / 12) }} € mesačne** (posledných {{ n }} plných rokov)
+              {% endif %}
+
+              *Preplatok sa vracia až po ročnom vyúčtovaní, preto netto za rok je pohyb peňazí v danom roku, nie presne cena spotreby toho roka.*
+              {% else %}
+              Senzory ZSE sa nenašli (je integrácia načítaná?).
+              {% endif %}
+
+  # ==================================================================== third view: details
+  - title: Podrobnosti
+    path: zse-details
+    icon: mdi:information-outline
+    type: sections
+    max_columns: 2
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Od prvej faktúry
+            heading_style: title
+            icon: mdi:sigma
+          - type: markdown
+            content: |
+              {% macro m2(v) -%}{{ '{:,.2f}'.format(v | float(0)) | replace(',', '#') | replace('.', ',') | replace('#', ' ') }}{%- endmacro %}
+              {% macro m0(v) -%}{{ '{:,.0f}'.format(v | float(0)) | replace(',', '#') | replace('#', ' ') }}{%- endmacro %}
+              {% set ids = integration_entities('zse_energia') %}
+              {% macro val(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}
+              {%- set st = states(m[0]) -%}
+              {%- set u = state_attr(m[0], 'unit_of_measurement') -%}
+              {%- if u and is_number(st) -%}{{ m0(st) }} {{ u }}{%- else -%}{{ st }}{%- endif -%}
+              {%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro eur(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}{{ m2(states(m[0])) }} €{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro yn(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) in ['on', 'off'] -%}{{ 'áno' if states(m[0]) == 'on' else 'nie' }}{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              - Zaplatené spolu: **{{ eur('paid_total') }}**
+              - Vrátené spolu: **{{ eur('refunds_total') }}**
+              - Zaplatené netto spolu: **{{ eur('net_paid_total') }}**
+              - Zaplatené tento rok: **{{ eur('paid_this_year') }}**
+              - Vrátené tento rok: **{{ eur('refunds_this_year') }}**
+              - Preplatok: **{{ eur('overpayment') }}**
+          - type: heading
+            heading: Platby a fakturácia
+            heading_style: title
+            icon: mdi:receipt-text-clock
+          - type: markdown
+            content: |
+              {% macro m2(v) -%}{{ '{:,.2f}'.format(v | float(0)) | replace(',', '#') | replace('.', ',') | replace('#', ' ') }}{%- endmacro %}
+              {% macro m0(v) -%}{{ '{:,.0f}'.format(v | float(0)) | replace(',', '#') | replace('#', ' ') }}{%- endmacro %}
+              {% set ids = integration_entities('zse_energia') %}
+              {% macro val(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}
+              {%- set st = states(m[0]) -%}
+              {%- set u = state_attr(m[0], 'unit_of_measurement') -%}
+              {%- if u and is_number(st) -%}{{ m0(st) }} {{ u }}{%- else -%}{{ st }}{%- endif -%}
+              {%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro eur(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}{{ m2(states(m[0])) }} €{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro yn(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) in ['on', 'off'] -%}{{ 'áno' if states(m[0]) == 'on' else 'nie' }}{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              - Posledná prijatá platba: **{{ val('last_payment_date') }}**
+              - Ďalšia zálohová faktúra: **{{ val('next_invoice_date') }}**
+              - Deň splatnosti zálohy (v mesiaci): **{{ val('advance_due_day') }}**
+              - Faktúra čaká na úhradu: **{{ yn('payment_pending') }}**
+              - Platba po splatnosti: **{{ yn('overdue_flag') }}**
+          - type: heading
+            heading: Spotreba
+            heading_style: title
+            icon: mdi:flash
+          - type: markdown
+            content: |
+              {% macro m2(v) -%}{{ '{:,.2f}'.format(v | float(0)) | replace(',', '#') | replace('.', ',') | replace('#', ' ') }}{%- endmacro %}
+              {% macro m0(v) -%}{{ '{:,.0f}'.format(v | float(0)) | replace(',', '#') | replace('#', ' ') }}{%- endmacro %}
+              {% set ids = integration_entities('zse_energia') %}
+              {% macro val(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}
+              {%- set st = states(m[0]) -%}
+              {%- set u = state_attr(m[0], 'unit_of_measurement') -%}
+              {%- if u and is_number(st) -%}{{ m0(st) }} {{ u }}{%- else -%}{{ st }}{%- endif -%}
+              {%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro eur(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}{{ m2(states(m[0])) }} €{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro yn(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) in ['on', 'off'] -%}{{ 'áno' if states(m[0]) == 'on' else 'nie' }}{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              - Spotreba, posledný mesiac: **{{ val('consumption_latest_month') }}**
+              - Spotreba, 12-mesačný priemer: **{{ val('consumption_monthly_average') }}**
+      - type: grid
+        cards:
+          - type: heading
+            heading: Zmluva a technické údaje
+            heading_style: title
+            icon: mdi:file-document-outline
+          - type: markdown
+            content: |
+              {% macro m2(v) -%}{{ '{:,.2f}'.format(v | float(0)) | replace(',', '#') | replace('.', ',') | replace('#', ' ') }}{%- endmacro %}
+              {% macro m0(v) -%}{{ '{:,.0f}'.format(v | float(0)) | replace(',', '#') | replace('#', ' ') }}{%- endmacro %}
+              {% set ids = integration_entities('zse_energia') %}
+              {% macro val(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}
+              {%- set st = states(m[0]) -%}
+              {%- set u = state_attr(m[0], 'unit_of_measurement') -%}
+              {%- if u and is_number(st) -%}{{ m0(st) }} {{ u }}{%- else -%}{{ st }}{%- endif -%}
+              {%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro eur(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}{{ m2(states(m[0])) }} €{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro yn(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) in ['on', 'off'] -%}{{ 'áno' if states(m[0]) == 'on' else 'nie' }}{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              - Zmluva platná od: **{{ val('contract_valid_from') }}**
+              - Distribútor: **{{ val('distributor') }}**
+              - Distribučná sadzba: **{{ val('distribution_tariff') }}**
+              - Tarifikácia: **{{ val('tariffication') }}**
+              - Kód HDO: **{{ val('hdo_code') }}**
+              - Fázy: **{{ val('phases') }}**
+              - Hlavný istič: **{{ val('circuit_breaker') }}**
+              - Elektronická faktúra zapnutá: **{{ yn('e_invoice') }}**

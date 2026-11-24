@@ -1,0 +1,509 @@
+# ZSE Energia - ready-made dashboard ("sections" layout, needs Home Assistant 2024.3 or newer).
+#
+# The texts follow the language of Home Assistant (Settings -> System -> General -> Language): Hungarian,
+# Slovak or English, English for any other language. They are served by the integration's
+# "Dashboard language" sensor, so one dashboard works for every language. After changing the language
+# reload the integration (or restart Home Assistant) once.
+#
+# How to use
+#   1. Replace every  __ZU__  with your contract-account number (the "variable symbol" on your
+#      invoices, 10 digits). It is part of the statistic ids, e.g. zse_energia:advances_paid_6300000001.
+#      PowerShell:  (Get-Content zse_dashboard.yaml) -replace '__ZU__','6300000001' | Set-Content zse_mine.yaml
+#   2. Settings -> Dashboards -> Add dashboard -> New dashboard from scratch -> open it -> pencil ->
+#      three dots -> "Raw configuration editor" and paste the whole file.
+#
+# The charts read long-term STATISTICS (written by the integration), so they show the whole ~15-year history.
+# Their legend names also come from the integration, in the Home Assistant language.
+#
+# If a statistics chart is empty: Developer tools -> Statistics -> look for "zse_energia:" entries
+# (they appear a minute after the first update of the integration).
+title: ZSE
+views:
+  - path: zse-payments
+    icon: mdi:cash-multiple
+    type: sections
+    max_columns: 2
+    sections:
+      - type: grid
+        cards:
+          - type: markdown
+            content: |
+              {% set u = integration_entities('zse_energia') | select('is_state_attr', 'zse_key', 'ui') | list %}
+              {% set T = state_attr(u[0], 't') if u else none %}
+              {% if T %}
+              {% macro m2(v) -%}{{ '{:,.2f}'.format(v | float(0)) | replace(',', '#') | replace('.', T.ds) | replace('#', T.ts) }}{%- endmacro %}
+              {% macro m0(v) -%}{{ '{:,.0f}'.format(v | float(0)) | replace(',', '#') | replace('#', T.ts) }}{%- endmacro %}
+              {% set ids = integration_entities('zse_energia') %}
+              {% macro val(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}
+              {%- set st = states(m[0]) -%}
+              {%- set un = state_attr(m[0], 'unit_of_measurement') -%}
+              {%- if un and is_number(st) -%}{{ m0(st) }}{{ T.nb }}{{ un }}{%- else -%}{{ st }}{%- endif -%}
+              {%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro eur(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}{{ m2(states(m[0])) }}{{ T.nb }}€{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro hrs(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}{{ m2(states(m[0])) }}{{ T.nb }}h{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro yn(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) in ['on', 'off'] -%}{{ T.yes if states(m[0]) == 'on' else T.no }}{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              <ha-icon icon="mdi:calendar-clock"></ha-icon> **{{ T.h_next }}**
+
+              ## {{ val('next_payment_date') }}
+              ### {{ eur('next_payment_amount') }}
+              *{{ T.l_pay_caption }}*
+
+              - {{ T.l_open }}: **{{ eur('to_pay') }}**
+              - {{ T.l_overdue }}: **{{ eur('overdue') }}**
+              - {{ T.l_advance }}: **{{ eur('advance_amount') }}**
+              - {{ T.l_method }}: **{{ val('payment_method') }}**
+              {% else %}
+              *Update ZSE Energia to 0.3.0 or newer and restart Home Assistant: the dashboard texts come from its "Dashboard language" sensor.*
+              {% endif %}
+          - type: markdown
+            content: |
+              {% set u = integration_entities('zse_energia') | select('is_state_attr', 'zse_key', 'ui') | list %}
+              {% set T = state_attr(u[0], 't') if u else none %}
+              {% if T %}
+              {% macro m2(v) -%}{{ '{:,.2f}'.format(v | float(0)) | replace(',', '#') | replace('.', T.ds) | replace('#', T.ts) }}{%- endmacro %}
+              {% macro m0(v) -%}{{ '{:,.0f}'.format(v | float(0)) | replace(',', '#') | replace('#', T.ts) }}{%- endmacro %}
+              {% set ids = integration_entities('zse_energia') %}
+              {% macro val(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}
+              {%- set st = states(m[0]) -%}
+              {%- set un = state_attr(m[0], 'unit_of_measurement') -%}
+              {%- if un and is_number(st) -%}{{ m0(st) }}{{ T.nb }}{{ un }}{%- else -%}{{ st }}{%- endif -%}
+              {%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro eur(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}{{ m2(states(m[0])) }}{{ T.nb }}€{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro hrs(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}{{ m2(states(m[0])) }}{{ T.nb }}h{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro yn(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) in ['on', 'off'] -%}{{ T.yes if states(m[0]) == 'on' else T.no }}{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              <ha-icon icon="mdi:file-document-check"></ha-icon> **{{ T.h_settle }}**
+
+              ## {{ val('next_settlement') }}
+              *{{ T.l_settle_caption }}*
+
+              - {{ T.l_last_settle }}: **{{ eur('last_settlement_amount') }}** ({{ val('last_settlement_date') }})
+              - {{ T.l_tariff }}: **{{ val('tariff') }}**
+
+              *{{ T.l_settle_note }}*
+              {% else %}
+              *Update ZSE Energia to 0.3.0 or newer and restart Home Assistant: the dashboard texts come from its "Dashboard language" sensor.*
+              {% endif %}
+          - type: markdown
+            content: |
+              {% set u = integration_entities('zse_energia') | select('is_state_attr', 'zse_key', 'ui') | list %}
+              {% set T = state_attr(u[0], 't') if u else none %}
+              {% if T %}
+              {% macro m2(v) -%}{{ '{:,.2f}'.format(v | float(0)) | replace(',', '#') | replace('.', T.ds) | replace('#', T.ts) }}{%- endmacro %}
+              {% macro m0(v) -%}{{ '{:,.0f}'.format(v | float(0)) | replace(',', '#') | replace('#', T.ts) }}{%- endmacro %}
+              {% set ids = integration_entities('zse_energia') %}
+              {% macro val(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}
+              {%- set st = states(m[0]) -%}
+              {%- set un = state_attr(m[0], 'unit_of_measurement') -%}
+              {%- if un and is_number(st) -%}{{ m0(st) }}{{ T.nb }}{{ un }}{%- else -%}{{ st }}{%- endif -%}
+              {%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro eur(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}{{ m2(states(m[0])) }}{{ T.nb }}€{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro hrs(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}{{ m2(states(m[0])) }}{{ T.nb }}h{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro yn(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) in ['on', 'off'] -%}{{ T.yes if states(m[0]) == 'on' else T.no }}{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              <ha-icon icon="mdi:flash-triangle"></ha-icon> **{{ T.h_tariff }}**
+
+              {% set b = ids | select('is_state_attr', 'zse_key', 'low_tariff') | list %}
+              {% set d = ids | select('is_state_attr', 'zse_key', 'hdo_data') | list %}
+              {% if b %}
+              {% set e = b[0] %}
+              {% set hh = state_attr(e, 'high_hours_today') | float(0) %}
+              {% set G = 'data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201%201%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%238bc34a%22%2F%3E%3C%2Fsvg%3E' %}
+              {% set O = 'data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201%201%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23f26a21%22%2F%3E%3C%2Fsvg%3E' %}
+              {% set B = 'data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201%201%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%232196f3%22%2F%3E%3C%2Fsvg%3E' %}
+              {% set X = 'data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201%201%22%20preserveAspectRatio%3D%22none%22%3E%3C%2Fsvg%3E' %}
+              {% set SCALE %}data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22720%22%20height%3D%2218%22%20viewBox%3D%220%200%20720%2018%22%20font-family%3D%22sans-serif%22%20font-size%3D%2212%22%20fill%3D%22%239aa0a6%22%3E%3Ctext%20x%3D%220%22%20y%3D%2213%22%3E0%3C%2Ftext%3E%3Ctext%20x%3D%2290%22%20y%3D%2213%22%20text-anchor%3D%22middle%22%3E3%3C%2Ftext%3E%3Ctext%20x%3D%22180%22%20y%3D%2213%22%20text-anchor%3D%22middle%22%3E6%3C%2Ftext%3E%3Ctext%20x%3D%22270%22%20y%3D%2213%22%20text-anchor%3D%22middle%22%3E9%3C%2Ftext%3E%3Ctext%20x%3D%22360%22%20y%3D%2213%22%20text-anchor%3D%22middle%22%3E12%3C%2Ftext%3E%3Ctext%20x%3D%22450%22%20y%3D%2213%22%20text-anchor%3D%22middle%22%3E15%3C%2Ftext%3E%3Ctext%20x%3D%22540%22%20y%3D%2213%22%20text-anchor%3D%22middle%22%3E18%3C%2Ftext%3E%3Ctext%20x%3D%22630%22%20y%3D%2213%22%20text-anchor%3D%22middle%22%3E21%3C%2Ftext%3E%3Ctext%20x%3D%22720%22%20y%3D%2213%22%20text-anchor%3D%22end%22%3E24%3C%2Ftext%3E%3C%2Fsvg%3E{% endset %}
+              {% set nm = now().hour * 60 + now().minute %}
+              {% macro seg(a, b, k) -%}
+              <img src="{{ B if k == 'N' else (O if k == 'H' else G) }}" width="{{ ((b - a) / 1440 * 99) | round(2) }}%" height="24" title="{{ (T.t_now ~ ' ' ~ ('%02d:%02d' | format(nm // 60, nm % 60))) if k == 'N' else ('%02d:%02d–%02d:%02d' | format(a // 60, a % 60, b // 60, b % 60) ~ ' · ' ~ (T.t_high if k == 'H' else T.t_low) ~ ' · ' ~ (b - a) ~ ' min') }}">
+              {%- endmacro %}
+              {% macro emit(a, b, k) -%}
+              {%- if a <= nm and nm < b -%}
+              {%- set m2 = [nm + 10, b] | min -%}
+              {%- if nm > a -%}{{ seg(a, nm, k) }}{%- endif -%}{{ seg(nm, m2, 'N') }}{%- if b > m2 -%}{{ seg(m2, b, k) }}{%- endif -%}
+              {%- else -%}{{ seg(a, b, k) }}{%- endif -%}
+              {%- endmacro %}
+              {% macro strip(ws) -%}
+              {%- set ns = namespace(cur=0, out='') -%}
+              {%- for w in ws -%}
+              {%- set p = w.split('-') -%}
+              {%- set a = p[0][0:2] | int * 60 + p[0][3:5] | int -%}
+              {%- set z = p[1][0:2] | int * 60 + p[1][3:5] | int -%}
+              {%- if a > ns.cur -%}{%- set ns.out = ns.out ~ emit(ns.cur, a, 'L') -%}{%- endif -%}
+              {%- set ns.out = ns.out ~ emit(a, z, 'H') -%}
+              {%- set ns.cur = z -%}
+              {%- endfor -%}
+              {%- if ns.cur < 1440 -%}{%- set ns.out = ns.out ~ emit(ns.cur, 1440, 'L') -%}{%- endif -%}
+              {{ ns.out }}
+              {%- endmacro %}
+              ## {{ T.t_low if is_state(e, 'on') else T.t_high }}
+              *{{ T.t_until }} {{ state_attr(e, 'changes_at_local') or '–' }}*
+
+              <img src="{{ G }}" width="12" height="12"> {{ T.t_low }} ({{ '%g' | format(24 - hh) }} h)&nbsp;&nbsp;&nbsp;<img src="{{ O }}" width="12" height="12"> {{ T.t_high }} ({{ '%g' | format(hh) }} h)&nbsp;&nbsp;&nbsp;<img src="{{ B }}" width="4" height="12"> {{ T.t_now }}
+
+              {{ strip(state_attr(e, 'high_windows_today') or []) }}
+              <img src="{{ SCALE }}" width="99%">
+
+              - {{ T.t_high }}:
+              {% for w in (state_attr(e, 'high_windows_today') or []) %}{% set q = w.split('-') %}{% set mins = (q[1][0:2] | int * 60 + q[1][3:5] | int) - (q[0][0:2] | int * 60 + q[0][3:5] | int) %}  - {{ q[0] }}–{{ q[1] }} ({{ mins }} min)
+              {% endfor %}
+              <br>
+
+              - {{ T.t_hours }}: **{{ hrs('high_tariff_hours_today') }}**
+              - {{ T.t_program }}: **{{ (state_attr(e, 'programs') or []) | join(' + ') or '–' }}**
+              {% if d %}- {{ T.t_data }}: **{{ T['t_' ~ states(d[0])] if states(d[0]) in ['up_to_date', 'built_in', 'error'] else '–' }}**{% endif %}
+              {% else %}
+              {{ T.t_none }}
+              {% endif %}
+              {% else %}
+              *Update ZSE Energia to 0.3.0 or newer and restart Home Assistant: the dashboard texts come from its "Dashboard language" sensor.*
+              {% endif %}
+          - type: markdown
+            content: |
+              {% set u = integration_entities('zse_energia') | select('is_state_attr', 'zse_key', 'ui') | list %}
+              {% set T = state_attr(u[0], 't') if u else none %}
+              {% if T %}
+              {% macro m2(v) -%}{{ '{:,.2f}'.format(v | float(0)) | replace(',', '#') | replace('.', T.ds) | replace('#', T.ts) }}{%- endmacro %}
+              {% macro m0(v) -%}{{ '{:,.0f}'.format(v | float(0)) | replace(',', '#') | replace('#', T.ts) }}{%- endmacro %}
+              {% set m = integration_entities('zse_energia') | select('is_state_attr', 'zse_history', true) | list %}
+              <ha-icon icon="mdi:chart-box"></ha-icon> **{{ T.h_years }}**
+
+              {% macro blk(ys, year, label) -%}
+              {%- set r = ys | selectattr('year', 'eq', year) | list -%}
+              ### {{ year }} · {{ label }}
+              {% if r -%}
+              {%- set y = r[0] -%}
+              ## {{ m2(y.net) }}{{ T.nb }}€
+              *{{ T.net_caption }}*
+              - {{ T.adv }}: {{ m2(y.advances) }}{{ T.nb }}€
+              - {{ T.extra }}: {{ m2(y.settlements + y.other) }}{{ T.nb }}€
+              - {{ T.refund }}: {{ m2(y.refunds) }}{{ T.nb }}€
+              {%- else -%}
+              –
+              {%- endif -%}
+              {%- endmacro %}
+              {% if m %}
+              {% set ys = state_attr(m[0], 'yearly') or [] %}
+              {{ blk(ys, now().year, T.this_label) }}
+
+              {{ blk(ys, now().year - 1, T.last_label) }}
+
+              *{{ T.years_note }}*
+              {% else %}
+              {{ T.notfound }}
+              {% endif %}
+              {% else %}
+              *Update ZSE Energia to 0.3.0 or newer and restart Home Assistant: the dashboard texts come from its "Dashboard language" sensor.*
+              {% endif %}
+      - type: grid
+        cards:
+          - type: markdown
+            content: |
+              {% set u = integration_entities('zse_energia') | select('is_state_attr', 'zse_key', 'ui') | list %}
+              {% set T = state_attr(u[0], 't') if u else none %}
+              {% if T %}
+              {% macro m2(v) -%}{{ '{:,.2f}'.format(v | float(0)) | replace(',', '#') | replace('.', T.ds) | replace('#', T.ts) }}{%- endmacro %}
+              {% macro m0(v) -%}{{ '{:,.0f}'.format(v | float(0)) | replace(',', '#') | replace('#', T.ts) }}{%- endmacro %}
+              <ha-icon icon="mdi:chart-bar"></ha-icon> **{{ T.c_pay_year }}**
+              {% else %}
+              *Update ZSE Energia to 0.3.0 or newer and restart Home Assistant: the dashboard texts come from its "Dashboard language" sensor.*
+              {% endif %}
+          - type: statistics-graph
+            chart_type: bar
+            period: year
+            days_to_show: 7000
+            stat_types:
+              - change
+            expand_legend: true
+            entities:
+              - entity: zse_energia:advances_paid___ZU__
+                color: '#3d7ee0'
+              - entity: zse_energia:settlements_paid___ZU__
+                color: '#e0803d'
+              - entity: zse_energia:other_paid___ZU__
+                color: '#9b9b9b'
+              - entity: zse_energia:refunds_received___ZU__
+                color: '#2e9e5b'
+              - entity: zse_energia:net_paid___ZU__
+                color: '#7a4de0'
+          - type: markdown
+            content: |
+              {% set u = integration_entities('zse_energia') | select('is_state_attr', 'zse_key', 'ui') | list %}
+              {% set T = state_attr(u[0], 't') if u else none %}
+              {% if T %}
+              {% macro m2(v) -%}{{ '{:,.2f}'.format(v | float(0)) | replace(',', '#') | replace('.', T.ds) | replace('#', T.ts) }}{%- endmacro %}
+              {% macro m0(v) -%}{{ '{:,.0f}'.format(v | float(0)) | replace(',', '#') | replace('#', T.ts) }}{%- endmacro %}
+              <ha-icon icon="mdi:flash"></ha-icon> **{{ T.c_cons_year }}**
+              {% else %}
+              *Update ZSE Energia to 0.3.0 or newer and restart Home Assistant: the dashboard texts come from its "Dashboard language" sensor.*
+              {% endif %}
+          - type: statistics-graph
+            chart_type: bar
+            period: year
+            days_to_show: 3000
+            stat_types:
+              - change
+            hide_legend: true
+            entities:
+              - entity: zse_energia:consumption___ZU__
+                color: '#e0c23d'
+          - type: markdown
+            content: |
+              {% set u = integration_entities('zse_energia') | select('is_state_attr', 'zse_key', 'ui') | list %}
+              {% set T = state_attr(u[0], 't') if u else none %}
+              {% if T %}
+              {% macro m2(v) -%}{{ '{:,.2f}'.format(v | float(0)) | replace(',', '#') | replace('.', T.ds) | replace('#', T.ts) }}{%- endmacro %}
+              {% macro m0(v) -%}{{ '{:,.0f}'.format(v | float(0)) | replace(',', '#') | replace('#', T.ts) }}{%- endmacro %}
+              <ha-icon icon="mdi:flash"></ha-icon> **{{ T.c_cons_month }}**
+              {% else %}
+              *Update ZSE Energia to 0.3.0 or newer and restart Home Assistant: the dashboard texts come from its "Dashboard language" sensor.*
+              {% endif %}
+          - type: statistics-graph
+            chart_type: bar
+            period: month
+            days_to_show: 1100
+            stat_types:
+              - change
+            hide_legend: true
+            entities:
+              - entity: zse_energia:consumption___ZU__
+                color: '#e0c23d'
+  - path: zse-table
+    icon: mdi:table
+    type: sections
+    max_columns: 2
+    sections:
+      - type: grid
+        cards:
+          - type: markdown
+            content: |
+              {% set u = integration_entities('zse_energia') | select('is_state_attr', 'zse_key', 'ui') | list %}
+              {% set T = state_attr(u[0], 't') if u else none %}
+              {% if T %}
+              {% macro m2(v) -%}{{ '{:,.2f}'.format(v | float(0)) | replace(',', '#') | replace('.', T.ds) | replace('#', T.ts) }}{%- endmacro %}
+              {% macro m0(v) -%}{{ '{:,.0f}'.format(v | float(0)) | replace(',', '#') | replace('#', T.ts) }}{%- endmacro %}
+              {% set m = integration_entities('zse_energia') | select('is_state_attr', 'zse_history', true) | list %}
+              <ha-icon icon="mdi:table"></ha-icon> **{{ T.h_table }}**
+
+              {% if m %}
+              {% set e = m[0] %}
+              {% set ys = state_attr(e, 'yearly') or [] %}
+              {% set since = (state_attr(e, 'since') or '') | string %}
+              {% set done = ys | selectattr('year', 'lt', now().year) | list %}
+              {% set recent = done[-5:] %}
+              {{ T.t_intro }}
+
+              | {{ T.c_year }} | {{ T.c_paid }} | {{ T.c_ref }} | {{ T.c_net }} |
+              |---|--:|--:|--:|
+              {% for y in ys | reverse -%}
+              | {{ y.year }}{% if y.year == now().year %} *({{ T.ongoing }})*{% elif ys and y.year == ys[0].year and since[5:] != '01-01' %} *({{ T.partial }})*{% endif %} | {{ m2(y.paid) }}{{ T.nb }}€ | {{ m2(y.refunds) }}{{ T.nb }}€ | **{{ m2(y.net) }}{{ T.nb }}€** |
+              {% endfor %}
+              {% if recent %}
+              {% set n = recent | length %}
+              {% set avg_y = (recent | map(attribute='net') | sum) / n %}
+              {{ T.t_avg | replace('{y}', m0(avg_y)) | replace('{m}', m0(avg_y / 12)) | replace('{n}', n | string) }}
+              {% endif %}
+
+              *{{ T.t_note }}*
+              {% else %}
+              {{ T.notfound }}
+              {% endif %}
+              {% else %}
+              *Update ZSE Energia to 0.3.0 or newer and restart Home Assistant: the dashboard texts come from its "Dashboard language" sensor.*
+              {% endif %}
+  - path: zse-details
+    icon: mdi:information-outline
+    type: sections
+    max_columns: 2
+    sections:
+      - type: grid
+        cards:
+          - type: markdown
+            content: |
+              {% set u = integration_entities('zse_energia') | select('is_state_attr', 'zse_key', 'ui') | list %}
+              {% set T = state_attr(u[0], 't') if u else none %}
+              {% if T %}
+              {% macro m2(v) -%}{{ '{:,.2f}'.format(v | float(0)) | replace(',', '#') | replace('.', T.ds) | replace('#', T.ts) }}{%- endmacro %}
+              {% macro m0(v) -%}{{ '{:,.0f}'.format(v | float(0)) | replace(',', '#') | replace('#', T.ts) }}{%- endmacro %}
+              {% set ids = integration_entities('zse_energia') %}
+              {% macro val(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}
+              {%- set st = states(m[0]) -%}
+              {%- set un = state_attr(m[0], 'unit_of_measurement') -%}
+              {%- if un and is_number(st) -%}{{ m0(st) }}{{ T.nb }}{{ un }}{%- else -%}{{ st }}{%- endif -%}
+              {%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro eur(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}{{ m2(states(m[0])) }}{{ T.nb }}€{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro hrs(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}{{ m2(states(m[0])) }}{{ T.nb }}h{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro yn(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) in ['on', 'off'] -%}{{ T.yes if states(m[0]) == 'on' else T.no }}{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              <ha-icon icon="mdi:sigma"></ha-icon> **{{ T.h_totals }}**
+
+              - {{ T.d_paid_total }}: **{{ eur('paid_total') }}**
+              - {{ T.d_refunds_total }}: **{{ eur('refunds_total') }}**
+              - {{ T.d_net_total }}: **{{ eur('net_paid_total') }}**
+              - {{ T.d_paid_year }}: **{{ eur('paid_this_year') }}**
+              - {{ T.d_refunds_year }}: **{{ eur('refunds_this_year') }}**
+              - {{ T.d_overpay }}: **{{ eur('overpayment') }}**
+              {% else %}
+              *Update ZSE Energia to 0.3.0 or newer and restart Home Assistant: the dashboard texts come from its "Dashboard language" sensor.*
+              {% endif %}
+          - type: markdown
+            content: |
+              {% set u = integration_entities('zse_energia') | select('is_state_attr', 'zse_key', 'ui') | list %}
+              {% set T = state_attr(u[0], 't') if u else none %}
+              {% if T %}
+              {% macro m2(v) -%}{{ '{:,.2f}'.format(v | float(0)) | replace(',', '#') | replace('.', T.ds) | replace('#', T.ts) }}{%- endmacro %}
+              {% macro m0(v) -%}{{ '{:,.0f}'.format(v | float(0)) | replace(',', '#') | replace('#', T.ts) }}{%- endmacro %}
+              {% set ids = integration_entities('zse_energia') %}
+              {% macro val(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}
+              {%- set st = states(m[0]) -%}
+              {%- set un = state_attr(m[0], 'unit_of_measurement') -%}
+              {%- if un and is_number(st) -%}{{ m0(st) }}{{ T.nb }}{{ un }}{%- else -%}{{ st }}{%- endif -%}
+              {%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro eur(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}{{ m2(states(m[0])) }}{{ T.nb }}€{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro hrs(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}{{ m2(states(m[0])) }}{{ T.nb }}h{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro yn(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) in ['on', 'off'] -%}{{ T.yes if states(m[0]) == 'on' else T.no }}{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              <ha-icon icon="mdi:receipt-text-clock"></ha-icon> **{{ T.h_billing }}**
+
+              - {{ T.d_last_pay }}: **{{ val('last_payment_date') }}**
+              - {{ T.d_next_inv }}: **{{ val('next_invoice_date') }}**
+              - {{ T.d_due_day }}: **{{ val('advance_due_day') }}**
+              - {{ T.d_pending }}: **{{ yn('payment_pending') }}**
+              - {{ T.d_overdue_flag }}: **{{ yn('overdue_flag') }}**
+              {% else %}
+              *Update ZSE Energia to 0.3.0 or newer and restart Home Assistant: the dashboard texts come from its "Dashboard language" sensor.*
+              {% endif %}
+          - type: markdown
+            content: |
+              {% set u = integration_entities('zse_energia') | select('is_state_attr', 'zse_key', 'ui') | list %}
+              {% set T = state_attr(u[0], 't') if u else none %}
+              {% if T %}
+              {% macro m2(v) -%}{{ '{:,.2f}'.format(v | float(0)) | replace(',', '#') | replace('.', T.ds) | replace('#', T.ts) }}{%- endmacro %}
+              {% macro m0(v) -%}{{ '{:,.0f}'.format(v | float(0)) | replace(',', '#') | replace('#', T.ts) }}{%- endmacro %}
+              {% set ids = integration_entities('zse_energia') %}
+              {% macro val(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}
+              {%- set st = states(m[0]) -%}
+              {%- set un = state_attr(m[0], 'unit_of_measurement') -%}
+              {%- if un and is_number(st) -%}{{ m0(st) }}{{ T.nb }}{{ un }}{%- else -%}{{ st }}{%- endif -%}
+              {%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro eur(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}{{ m2(states(m[0])) }}{{ T.nb }}€{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro hrs(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}{{ m2(states(m[0])) }}{{ T.nb }}h{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro yn(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) in ['on', 'off'] -%}{{ T.yes if states(m[0]) == 'on' else T.no }}{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              <ha-icon icon="mdi:flash"></ha-icon> **{{ T.h_cons }}**
+
+              - {{ T.d_cons_last }}: **{{ val('consumption_latest_month') }}**
+              - {{ T.d_cons_avg }}: **{{ val('consumption_monthly_average') }}**
+              {% else %}
+              *Update ZSE Energia to 0.3.0 or newer and restart Home Assistant: the dashboard texts come from its "Dashboard language" sensor.*
+              {% endif %}
+      - type: grid
+        cards:
+          - type: markdown
+            content: |
+              {% set u = integration_entities('zse_energia') | select('is_state_attr', 'zse_key', 'ui') | list %}
+              {% set T = state_attr(u[0], 't') if u else none %}
+              {% if T %}
+              {% macro m2(v) -%}{{ '{:,.2f}'.format(v | float(0)) | replace(',', '#') | replace('.', T.ds) | replace('#', T.ts) }}{%- endmacro %}
+              {% macro m0(v) -%}{{ '{:,.0f}'.format(v | float(0)) | replace(',', '#') | replace('#', T.ts) }}{%- endmacro %}
+              {% set ids = integration_entities('zse_energia') %}
+              {% macro val(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}
+              {%- set st = states(m[0]) -%}
+              {%- set un = state_attr(m[0], 'unit_of_measurement') -%}
+              {%- if un and is_number(st) -%}{{ m0(st) }}{{ T.nb }}{{ un }}{%- else -%}{{ st }}{%- endif -%}
+              {%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro eur(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}{{ m2(states(m[0])) }}{{ T.nb }}€{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro hrs(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) not in ['unknown', 'unavailable'] -%}{{ m2(states(m[0])) }}{{ T.nb }}h{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              {% macro yn(key) -%}
+              {%- set m = ids | select('is_state_attr', 'zse_key', key) | list -%}
+              {%- if m and states(m[0]) in ['on', 'off'] -%}{{ T.yes if states(m[0]) == 'on' else T.no }}{%- else -%}–{%- endif -%}
+              {%- endmacro %}
+              <ha-icon icon="mdi:file-document-outline"></ha-icon> **{{ T.h_contract }}**
+
+              - {{ T.d_valid }}: **{{ val('contract_valid_from') }}**
+              - {{ T.d_distributor }}: **{{ val('distributor') }}**
+              - {{ T.d_dist_tariff }}: **{{ val('distribution_tariff') }}**
+              - {{ T.d_tariffication }}: **{{ val('tariffication') }}**
+              - {{ T.d_hdo }}: **{{ val('hdo_code') }}**
+              - {{ T.d_phases }}: **{{ val('phases') }}**
+              - {{ T.d_breaker }}: **{{ val('circuit_breaker') }}**
+              - {{ T.d_einvoice }}: **{{ yn('e_invoice') }}**
+              {% else %}
+              *Update ZSE Energia to 0.3.0 or newer and restart Home Assistant: the dashboard texts come from its "Dashboard language" sensor.*
+              {% endif %}

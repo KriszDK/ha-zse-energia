@@ -1,0 +1,166 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ZSE Energia (nem hivatalos)",
+        "description": "Jelentkezz be a ZSE ügyfélzóna (zse.sk) e-mailes fiókjával. Google/Facebook fiók nem támogatott.",
+        "data": {
+          "email": "E-mail",
+          "password": "Jelszó"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Újra bejelentkezés",
+        "description": "A ZSE portál elutasította a tárolt jelszót ({email}). Add meg a jelenlegi jelszót.",
+        "data": {
+          "password": "Jelszó"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Az e-mail vagy a jelszó hibás.",
+      "cannot_connect": "A ZSE portál nem érhető el.",
+      "portal_changed": "A ZSE portál váratlanul válaszolt (lehet, hogy megváltozott). Nézd meg a naplót.",
+      "unknown": "Váratlan hiba. Nézd meg a naplót."
+    },
+    "abort": {
+      "already_configured": "Ez a ZSE fiók már be van állítva.",
+      "wrong_account": "Az e-mail egy másik ZSE fiókhoz tartozik, mint a beállított."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "ZSE Energia beállítások",
+        "data": {
+          "scan_hours": "Frissítési időköz (óra)",
+          "hdo_winter_time": "A HDO készülékem egész évben téli időt használ (nyáron egy órával később vált a tarifa)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "next_payment_date": {
+        "name": "Következő fizetési határidő"
+      },
+      "next_payment_amount": {
+        "name": "Következő befizetés összege"
+      },
+      "next_invoice_date": {
+        "name": "Következő előlegszámla"
+      },
+      "advance_amount": {
+        "name": "Havi előleg"
+      },
+      "payment_method": {
+        "name": "Fizetési mód"
+      },
+      "tariff": {
+        "name": "Tarifa"
+      },
+      "last_settlement_amount": {
+        "name": "Utolsó elszámolás összege"
+      },
+      "last_settlement_date": {
+        "name": "Utolsó elszámolás dátuma"
+      },
+      "next_settlement": {
+        "name": "Következő éves elszámolás"
+      },
+      "last_payment_date": {
+        "name": "Utolsó beérkezett befizetés"
+      },
+      "consumption_latest_month": {
+        "name": "Fogyasztás, utolsó hónap"
+      },
+      "consumption_monthly_average": {
+        "name": "Fogyasztás, 12 havi átlag"
+      },
+      "to_pay": {
+        "name": "Fizetendő összeg"
+      },
+      "overdue_amount": {
+        "name": "Lejárt tartozás"
+      },
+      "overpayment": {
+        "name": "Túlfizetés"
+      },
+      "advance_due_day": {
+        "name": "Előleg esedékessége (a hónap napja)"
+      },
+      "contract_valid_from": {
+        "name": "Szerződés hatályos"
+      },
+      "distribution_tariff": {
+        "name": "Elosztási tarifa"
+      },
+      "tariffication": {
+        "name": "Tarifikáció"
+      },
+      "hdo_code": {
+        "name": "HDO kód"
+      },
+      "phases": {
+        "name": "Fázisok száma"
+      },
+      "circuit_breaker": {
+        "name": "Főkismegszakító"
+      },
+      "distributor": {
+        "name": "Elosztó"
+      },
+      "paid_this_year": {
+        "name": "Idén befizetve"
+      },
+      "refunds_this_year": {
+        "name": "Idei visszatérítés"
+      },
+      "paid_total": {
+        "name": "Összes befizetés"
+      },
+      "refunds_total": {
+        "name": "Összes visszatérítés"
+      },
+      "net_paid_total": {
+        "name": "Nettó befizetés összesen"
+      },
+      "ui_language": {
+        "name": "Dashboard nyelve"
+      },
+      "next_tariff_change": {
+        "name": "Következő tarifaváltás"
+      },
+      "high_tariff_hours_today": {
+        "name": "Magas tarifás órák ma"
+      },
+      "hdo_data": {
+        "name": "Tarifatábla (HDO) adatai",
+        "state": {
+          "up_to_date": "Naprakész",
+          "built_in": "Beépített másolat",
+          "error": "A frissítés sikertelen"
+        }
+      }
+    },
+    "binary_sensor": {
+      "overdue": {
+        "name": "Lejárt fizetés"
+      },
+      "payment_pending": {
+        "name": "Kifizetésre váró számla"
+      },
+      "e_invoice": {
+        "name": "E-számla bekapcsolva"
+      },
+      "low_tariff": {
+        "name": "Alacsony tarifa aktív"
+      }
+    },
+    "calendar": {
+      "tariff_calendar": {
+        "name": "Alacsony / magas tarifa"
+      }
+    }
+  }
+}
