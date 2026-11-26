@@ -46,7 +46,7 @@ A ready-made dashboard is in [`dashboards/zse_dashboard.yaml`](dashboards/zse_da
 
 How items are counted: an invoice counts when it has been paid (part-paid items count for the paid part), on the date of its last payment (due date if the portal lists no payment). Positive amounts are payments, negative ones refunds/credits. The integration cannot tell what an "Akonto" item or a corrective invoice economically is — they are counted by sign only.
 
-Data is cloud-polled every 6 hours by default (1–24 h in the options) — billing data changes at most daily.
+Data is cloud-polled once a day by default (1–24 h in the options). Billing data changes at most daily, and every poll signs in to the portal again. The low/high tariff (HDO) entities do not depend on this: they switch at the exact time from the downloaded tariff table.
 
 ## Gas
 
@@ -78,10 +78,6 @@ Then:
 3. Paste the copy into its own dashboard (raw configuration editor).
 
 The statistics of earlier names are removed at the next start and rebuilt from the portal history under the new names; nothing is lost. The text cards of a dashboard always show the *first* contract of their kind; showing the others needs a hand-edited dashboard.
-
-**Slovensky.** Hotové dashboardy počítajú s jednou zmluvou na elektrinu a jednou na plyn (bežný prípad, aj keď sú pod dvoma prihláseniami) a netreba v nich nič upravovať. Ak máte **dva alebo viac zmluvných účtov rovnakého druhu** (napr. dva elektromery), integrácia pridá číslo zmluvného účtu do názvov štatistík sama, ak sú pod jedným prihlásením (`zse_energia:net_paid_electricity_6300000001`). Ak sú pod **rôznymi prihláseniami**, zapnite v nastaveniach **každého** záznamu voľbu *Pridať číslo zmluvného účtu do identifikátorov štatistík* (*Nastavenia → Zariadenia a služby → ZSE Energia → Konfigurovať*). Potom skopírujte dashboard pre každú zmluvu a v kópii pripíšte `_<číslo zmluvného účtu>` na koniec každej štatistiky `zse_energia:...` (napr. v textovom editore nahraďte `_electricity` za `_electricity_6300000001`, pri plyne `_gas`). Štatistiky pod starými názvami sa pri ďalšom štarte odstránia a znovu vytvoria z histórie portálu pod novými názvami. Textové karty vždy ukazujú *prvú* zmluvu daného druhu.
-
-**Magyarul.** A kész dashboardok egy villany- és egy gázszerződésre számítanak (ez a szokásos eset, két bejelentkezés esetén is), és semmit nem kell bennük szerkeszteni. Ha **ugyanabból a fajtából két vagy több szerződéses számlád** van (például két villanyóra), az integráció maga hozzáteszi a számlaszámot a statisztikák nevéhez, ha egy bejelentkezés alatt vannak (`zse_energia:net_paid_electricity_6300000001`). Ha **különböző bejelentkezések** alatt vannak, kapcsold be **mindegyik** bejegyzés beállításaiban a *A szerződéses számla száma kerüljön a statisztikák azonosítójába* opciót (*Beállítások → Eszközök és szolgáltatások → ZSE Energia → Beállítás*). Ezután másold le a dashboardot szerződésenként, és a másolatban minden `zse_energia:...` statisztika végére írd oda a `_<szerződéses számla száma>` részt (szövegszerkesztőben például `_electricity` → `_electricity_6300000001`, gáznál `_gas`). A régi nevű statisztikák a következő indításkor törlődnek, és a portál előzményeiből újra létrejönnek az új nevek alatt. A szöveges kártyák mindig az adott fajta *első* szerződését mutatják.
 
 ## Low / high tariff (HDO)
 
