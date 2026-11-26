@@ -11,6 +11,7 @@ from datetime import date, datetime, timedelta
 import logging
 from typing import Any
 
+from homeassistant.components.recorder import get_instance
 from homeassistant.components.recorder.models import StatisticData, StatisticMetaData
 from homeassistant.components.recorder.statistics import async_add_external_statistics
 from homeassistant.core import HomeAssistant
@@ -70,6 +71,9 @@ SERIES: dict[str, tuple[dict[str, str], str, tuple[str | None, ...]]] = {
 }
 
 
+GAS_CONSUMPTION_NAMES = {"en": "Gas consumption", "hu": "Gázfogyasztás", "sk": "Spotreba plynu"}
+
+
 def statistic_id(key: str, zu: str) -> str:
     """e.g. ``zse_energia:advances_paid_6300000001`` (lowercase, digits, underscores)."""
     return f"{DOMAIN}:{key}_{zu}"
@@ -98,8 +102,53 @@ def _metadata(
     return meta  # type: ignore[return-value]
 
 
+TOTAL_KEY = "energy_net_paid"
+TOTAL_NAMES = {
+    "en": "Energy, net paid (electricity + gas)",
+    "hu": "Energia, nettó fizetés (villany + gáz)",
+    "sk": "Energie, zaplatené netto (elektrina + plyn)",
+}
+
+
+def total_statistic_id() -> str:
+    """The statistic that adds up the net payments of every contract account (all ZSE logins)."""
+    return f"{DOMAIN}:{TOTAL_KEY}"
+
+
+def async_import_total(hass: HomeAssistant, histories: list[dict[str, Any]]) -> None:
+    """Write the net amount paid of all accounts added together (e.g. electricity + gas)."""
+    points = [p for history in histories for p in (history.get("series") or {}).get("net_paid") or []]
+    rows = cumulative(points)
+    if not rows:
+        return
+    lang = hass.config.language.split("-")[0]
+    stats = [StatisticData(start=_noon(rows[0][0]) - timedelta(hours=1), state=0.0, sum=0.0)]
+    stats += [StatisticData(start=_noon(d), state=total, sum=total) for d, _, total in rows]
+    meta: dict[str, Any] = {
+        "source": DOMAIN,
+        "statistic_id": total_statistic_id(),
+        "name": TOTAL_NAMES.get(lang, TOTAL_NAMES["en"]),
+        "unit_of_measurement": "EUR",
+        "has_sum": True,
+        "unit_class": None,
+    }
+    if StatisticMeanType is not None:
+        meta["mean_type"] = StatisticMeanType.NONE
+    else:  # pragma: no cover
+        meta["has_mean"] = False
+    try:
+        async_add_external_statistics(hass, meta, stats)  # type: ignore[arg-type]
+    except HomeAssistantError as err:
+        _LOGGER.warning("Could not import statistics %s: %s", total_statistic_id(), err)
+
+
 def async_import_history(
-    hass: HomeAssistant, zu: str, history: dict[str, Any], suffix: bool = False
+    hass: HomeAssistant,
+    zu: str,
+    history: dict[str, Any],
+    suffix: bool = False,
+    kind: str = "electricity",
+    reset_gas_consumption: bool = False,
 ) -> None:
     """(Re)write all statistics of one account. Safe to repeat: rows are upserted by time."""
     lang = hass.config.language.split("-")[0]
@@ -107,6 +156,11 @@ def async_import_history(
     points["consumption"] = list(history.get("consumption") or [])
     for key, (names, unit, unit_classes) in SERIES.items():
         rows = cumulative(points.get(key) or [])
+        if key == "consumption" and kind == "gas":
+            names = GAS_CONSUMPTION_NAMES
+        if key == "consumption" and kind == "gas" and reset_gas_consumption:
+            # 0.5.0 development builds wrote estimated monthly rows: drop them once, the real ones follow
+            get_instance(hass).async_clear_statistics([statistic_id(key, zu)])
         if not rows:
             continue
         # a zero baseline just before the first row makes the first period's "change" correct

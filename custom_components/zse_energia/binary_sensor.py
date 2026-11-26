@@ -76,7 +76,7 @@ class ZseLowTariffBinarySensor(ZseHdoEntity, BinarySensorEntity):
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        attrs: dict[str, Any] = {"zse_key": "low_tariff", "programs": self._programs}
+        attrs: dict[str, Any] = {**self._zse_attrs, "programs": self._programs}
         snap = self._snapshot()
         if snap is None:
             return attrs

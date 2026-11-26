@@ -48,6 +48,23 @@ How items are counted: an invoice counts when it has been paid (part-paid items 
 
 Data is cloud-polled every 6 hours by default (1–24 h in the options) — billing data changes at most daily.
 
+## Gas
+
+Gas contracts work too. Add the integration once per ZSE login: if gas and electricity are under different e-mail addresses (e.g. a family member's account), set it up twice; if both contracts are under one login, one entry shows both (each contract account is its own device, *ZSE Elektrina …* / *ZSE Plyn …*).
+
+Everything about payments, advances, settlements and the payment statistics is the same as for electricity. Gas adds:
+
+| Entity | Meaning |
+|---|---|
+| Gas consumption, last billing period | kWh delivered in the last settled period (attributes: period, volume in m³) |
+| Expected annual consumption | kWh per year the contract is based on (attribute: m³) |
+| Last meter reading | m³ and the date of the reading |
+| Pricing | current pricing type of the delivery point (attribute: what the gas is used for) |
+
+Gas is billed per period (usually a year) and the portal gives no monthly gas data. The consumption statistic therefore holds one value per billing period, on the last day of the period, exactly as the portal reports it (nothing is spread or estimated), so the yearly chart shows the period that ended in that year and there is no monthly gas chart. The kWh and m³ values are the ones the portal bills (nothing is converted by the integration). HDO/tariff entities, phases and the monthly consumption series exist for electricity only. The dashboards pick the entities of their own commodity (`zse_dashboard.yaml` for electricity, `zse_dashboard_gas.yaml` for gas), also when both are set up. `python tools/make_dashboards.py` regenerates them.
+
+If both are set up, [`dashboards/zse_dashboard_combined.yaml`](dashboards/zse_dashboard_combined.yaml) shows electricity and gas side by side in one dashboard (replace `__ZU_E__` and `__ZU_G__` with the two account numbers). Its last chart is a stacked bar chart of the net amount paid per year: electricity and gas on top of each other, so the bar height is the total. The sum is also available as the statistic `zse_energia:energy_net_paid` (for your own cards), which the integration writes as soon as two contract accounts are loaded (also from two ZSE logins).
+
 ## Low / high tariff (HDO)
 
 The meter's HDO code (e.g. `659346` = programs 659 and 346) says when the low tariff applies. The times come from the public table of the distribution company ZSDIS ([page](https://www.zsdis.sk/Uvod/Online-sluzby/Casy-prepinania-nizkej-a-vysokej-tarify), no API: the integration reads the table data out of the page).

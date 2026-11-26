@@ -141,6 +141,18 @@
           "built_in": "Beépített másolat",
           "error": "A frissítés sikertelen"
         }
+      },
+      "gas_consumption_last": {
+        "name": "Gázfogyasztás, utolsó elszámolási időszak"
+      },
+      "expected_consumption": {
+        "name": "Várható éves fogyasztás"
+      },
+      "meter_reading": {
+        "name": "Utolsó mérőállás"
+      },
+      "price_list": {
+        "name": "Árazás"
       }
     },
     "binary_sensor": {

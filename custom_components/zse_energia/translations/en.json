@@ -141,6 +141,18 @@
           "built_in": "Built-in copy",
           "error": "Update failed"
         }
+      },
+      "gas_consumption_last": {
+        "name": "Gas consumption, last billing period"
+      },
+      "expected_consumption": {
+        "name": "Expected annual consumption"
+      },
+      "meter_reading": {
+        "name": "Last meter reading"
+      },
+      "price_list": {
+        "name": "Pricing"
       }
     },
     "binary_sensor": {

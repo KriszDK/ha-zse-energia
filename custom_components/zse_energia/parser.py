@@ -89,6 +89,50 @@ def _month_after(d: date) -> date:
 
 
 
+KIND_BY_COMMODITY = {"ELEKTRINA": "electricity", "PLYN": "gas"}
+
+# gas facts of a delivery point ("fakty")
+FACT_GAS_DELIVERED = "G_M_DSP010"  # delivered gas per billing period, kWh
+FACT_GAS_EXPECTED_KWH = "G_M_PSPK01"  # expected consumption kWh/year
+FACT_GAS_EXPECTED_M3 = "G_M_PSP_01"  # expected consumption m3/year
+FACT_GAS_PRICE_LIST = "G_N_DRT002"  # price list ("cenník"); ends when a regulated price takes over
+FACT_GAS_PRICE_TYPE = "G_N_DRT001"  # current pricing type of the delivery point
+GAS_USE = {"vykurovanie": "heating", "tuv": "hot_water", "varenie": "cooking"}
+
+
+def kind_of(commodity: str) -> str:
+    """``"ELEKTRINA"`` -> ``"electricity"``, ``"PLYN"`` -> ``"gas"``; anything else stays recognisable."""
+    return KIND_BY_COMMODITY.get(commodity.upper(), commodity.lower() or "other")
+
+
+def delivered_periods(fakty: list[dict] | None, fact_id: str) -> list[dict]:
+    """Delivered energy per billing period: ``[{"from", "to", "kwh"}]`` sorted by start."""
+    out = []
+    for x in fakty or []:
+        if (x.get("nazov") or {}).get("id") != fact_id:
+            continue
+        start, end = _d(x.get("platnostOd")), _d(x.get("platnostDo"))
+        kwh = _f((x.get("hodnota") or {}).get("id"))
+        if start and end and kwh is not None and end >= start:
+            out.append({"from": start, "to": end, "kwh": kwh})
+    return sorted(out, key=lambda p: p["from"])
+
+
+def gas_periods(fakty: list[dict] | None) -> list[dict]:
+    """Delivered gas per billing period (see ``delivered_periods``)."""
+    return delivered_periods(fakty, FACT_GAS_DELIVERED)
+
+
+def period_points(periods: list[dict]) -> list[tuple[date, float]]:
+    """One point per billing period: its total on the last day of the period (exactly what the portal reports)."""
+    return [(p["to"], p["kwh"]) for p in periods]
+
+
+def _latest_reading(om_detail: dict | None) -> dict | None:
+    rows = [x for x in (om_detail or {}).get("odpocty") or [] if _f(x.get("hodnota")) is not None]
+    return max(rows, key=lambda x: x.get("obdobieDo") or "", default=None)
+
+
 # --------------------------------------------------------------------- history
 _KIND_KEY = {"advance": "advances", "settlement": "settlements", "other": "other", "refund": "refunds"}
 
@@ -152,7 +196,12 @@ def cumulative(points: list[tuple[date, float]]) -> list[tuple[date, float, floa
     return rows
 
 
-def build_history(invoices: list[dict], spotreba: list[dict] | None, today: date) -> dict[str, Any]:
+def build_history(
+    invoices: list[dict],
+    spotreba: list[dict] | None,
+    today: date,
+    extra_consumption: list[tuple[date, float]] | None = None,
+) -> dict[str, Any]:
     """Payment and consumption history of one account (all values in EUR / kWh)."""
     events = settled_events(invoices)
     years: dict[int, dict[str, float]] = {}
@@ -182,6 +231,8 @@ def build_history(invoices: list[dict], spotreba: list[dict] | None, today: date
         for x in spotreba or []
         if (d := _d(x.get("datum"))) and _f(x.get("spotrebaCelkom")) is not None
     )
+    if not consumption and extra_consumption:
+        consumption = sorted(extra_consumption)
     return {
         "since": events[0]["date"] if events else None,
         "totals": _summary(total),
@@ -274,13 +325,29 @@ def build_account(
     last12 = [_f(x["spotrebaCelkom"]) for x in series[-12:]]
 
     commodity = str(contract.get("komoditaTyp") or zucet.get("komoditaTyp") or "")
+    kind = kind_of(commodity)
     om_detail = om_detail or {}
+    periods = gas_periods(fakty) if kind == "gas" else []
+    last_period = periods[-1] if periods else None
+    volume = next(
+        (
+            _f(x.get("hodnota"))
+            for x in om_detail.get("spotrebaSkutocna") or []
+            if x.get("jednotka") == "m3"
+            and last_period
+            and _d(x.get("obdobieDo")) == last_period["to"]
+        ),
+        None,
+    )
+    reading = _latest_reading(om_detail) if kind == "gas" else None
+    use = contract.get("ucelPouzitiaGas") or {}
     due_day = zucet.get("zalohyDenSplatnostiFo")
     if not isinstance(due_day, int):  # "zalohyDenSplatnosti" is a code object ("no due date chosen")
         due_day = zucet.get("zalohyDenSplatnosti") if isinstance(zucet.get("zalohyDenSplatnosti"), int) else None
     return {
         "zu": zu,
         "commodity": commodity,
+        "kind": kind,
         "device_name": f"ZSE {commodity.capitalize()} {zu}".strip(),
         "next_payment_date": next_date,
         "next_payment_amount": next_amount,
@@ -312,7 +379,27 @@ def build_account(
         "consumption_latest_month": _f(latest.get("spotrebaCelkom")) if latest else None,
         "consumption_latest_month_date": _d(latest.get("datum")) if latest else None,
         "consumption_monthly_average": round(mean(last12), 1) if last12 else None,
-        "history": build_history(own, spotreba, today),
+        "gas_consumption_last": last_period["kwh"] if last_period else None,
+        "gas_consumption_last_from": last_period["from"] if last_period else None,
+        "gas_consumption_last_to": last_period["to"] if last_period else None,
+        "gas_consumption_last_m3": volume,
+        "gas_periods": (
+            [{"from": q["from"].isoformat(), "to": q["to"].isoformat(), "kwh": q["kwh"]} for q in periods]
+            if kind == "gas"
+            else None
+        ),
+        "expected_consumption_kwh": (
+            _f(contract.get("spotrebaPredpokladana")) or _f(_fact(fakty, FACT_GAS_EXPECTED_KWH)) if kind == "gas" else None
+        ),
+        "expected_consumption_m3": (
+            _f(contract.get("spotrebaPredpokladanaM3")) or _f(_fact(fakty, FACT_GAS_EXPECTED_M3)) if kind == "gas" else None
+        ),
+        "meter_reading": _f(reading.get("hodnota")) if reading else None,
+        "meter_reading_unit": reading.get("jednotka") if reading else None,
+        "meter_reading_date": _d(reading.get("obdobieDo")) if reading else None,
+        "price_list": (_fact(fakty, FACT_GAS_PRICE_TYPE) or _fact(fakty, FACT_GAS_PRICE_LIST)) if kind == "gas" else None,
+        "gas_use": sorted(name for key, name in GAS_USE.items() if use.get(key)) if kind == "gas" else None,
+        "history": build_history(own, spotreba, today, period_points(periods) if periods else None),
     }
 
 

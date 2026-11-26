@@ -12,6 +12,16 @@ NB = " "  # non-breaking space: keeps "1 234,50 €" on one line
 
 TEXTS: dict[str, dict[str, str]] = {
     "en": {
+        "d_gas_last": "Gas consumption, last billing period",
+        "d_expected": "Expected annual consumption",
+        "d_meter": "Last meter reading",
+        "d_pricing": "Pricing",
+        "d_periodicity": "Settlement",
+        "d_use": "Gas is used for",
+        "u_heating": "heating",
+        "u_hot_water": "hot water",
+        "u_cooking": "cooking",
+        "t_period": "Period",
         "t_now": "Now",
         "t_today": "Today", "t_tomorrow": "Tomorrow",
         "cal_low": "Low tariff",
@@ -43,12 +53,18 @@ TEXTS: dict[str, dict[str, str]] = {
         "notfound": "The ZSE sensors were not found (is the integration loaded?).",
         "c_pay_year": "Payments, refunds and net per year (click a legend item to show/hide it)",
         "c_cons_year": "Consumption per year (kWh)",
+        "c_cons_period": "Gas consumption per billing period (kWh), shown in the year the period ends",
+        "t_period_note": "The portal reports gas per billing period, so a period counts in the year it ends.",
         "c_cons_month": "Consumption per month (kWh, last 3 years)",
+        "c_total": "Energy cost per year: net paid, electricity + gas",
+        "k_electricity": "Electricity",
+        "k_gas": "Gas",
+        "t_total": "Total",
         "t_intro": (
             "How much you paid ZSE each year, and how much came back to you:\n\n"
             "- **Paid**: everything you paid in that year: the monthly advances plus any settlement surcharge.\n"
             "- **Refunded**: what ZSE paid back to you after the annual settlement (overpayment).\n"
-            "- **Net**: Paid minus Refunded. This is what electricity really cost you in cash that year."
+            "- **Net**: Paid minus Refunded. This is what the energy really cost you in cash that year."
         ),
         "c_year": "Year", "c_paid": "Paid", "c_ref": "Refunded", "c_net": "Net (cost)",
         "ongoing": "ongoing", "partial": "from the start of the data",
@@ -72,6 +88,16 @@ TEXTS: dict[str, dict[str, str]] = {
         "d_einvoice": "E-invoice enabled",
     },
     "hu": {
+        "d_gas_last": "Gázfogyasztás, utolsó elszámolási időszak",
+        "d_expected": "Várható éves fogyasztás",
+        "d_meter": "Utolsó mérőállás",
+        "d_pricing": "Árazás",
+        "d_periodicity": "Elszámolás",
+        "d_use": "A gázt erre használod",
+        "u_heating": "fűtés",
+        "u_hot_water": "melegvíz",
+        "u_cooking": "főzés",
+        "t_period": "Időszak",
         "t_now": "Most",
         "t_today": "Ma", "t_tomorrow": "Holnap",
         "cal_low": "Alacsony tarifa",
@@ -102,12 +128,18 @@ TEXTS: dict[str, dict[str, str]] = {
         "notfound": "A ZSE szenzorok nem találhatók (be van töltve az integráció?).",
         "c_pay_year": "Befizetések, visszautalások és nettó évente (a jelmagyarázatra kattintva ki/be kapcsolható)",
         "c_cons_year": "Fogyasztás évente (kWh)",
+        "c_cons_period": "Gázfogyasztás elszámolási időszakonként (kWh), az időszak végének évében",
+        "t_period_note": "A portál a gázt elszámolási időszakonként adja meg, ezért egy időszak abban az évben számít, amelyikben véget ér.",
         "c_cons_month": "Fogyasztás havonta (kWh, utolsó 3 év)",
+        "c_total": "Energiaköltség évente: nettó kifizetés, villany + gáz",
+        "k_electricity": "Villany",
+        "k_gas": "Gáz",
+        "t_total": "Összesen",
         "t_intro": (
             "Itt látod évenként, mennyit fizettél a ZSE-nek, és mennyit kaptál vissza:\n\n"
             "- **Befizetés**: amit abban az évben kifizettél: a havi előlegek és az esetleges elszámolási pótlék együtt.\n"
             "- **Visszakaptál**: amit az éves elszámolás után a ZSE visszautalt neked (túlfizetés).\n"
-            "- **Nettó (költség)**: Befizetés mínusz Visszakaptál. Ez az, amibe az áram abban az évben ténylegesen került."
+            "- **Nettó (költség)**: Befizetés mínusz Visszakaptál. Ez az, amibe az energia abban az évben ténylegesen került."
         ),
         "c_year": "Év", "c_paid": "Befizetés", "c_ref": "Visszakaptál", "c_net": "Nettó (költség)",
         "ongoing": "folyamatban", "partial": "az adatok kezdetétől",
@@ -132,6 +164,16 @@ TEXTS: dict[str, dict[str, str]] = {
         "d_einvoice": "E-számla bekapcsolva",
     },
     "sk": {
+        "d_gas_last": "Spotreba plynu, posledné zúčtovacie obdobie",
+        "d_expected": "Predpokladaná ročná spotreba",
+        "d_meter": "Posledný stav merača",
+        "d_pricing": "Cenník",
+        "d_periodicity": "Vyúčtovanie",
+        "d_use": "Plyn sa používa na",
+        "u_heating": "vykurovanie",
+        "u_hot_water": "ohrev vody",
+        "u_cooking": "varenie",
+        "t_period": "Obdobie",
         "t_now": "Teraz",
         "t_today": "Dnes", "t_tomorrow": "Zajtra",
         "cal_low": "Nízka tarifa",
@@ -162,12 +204,18 @@ TEXTS: dict[str, dict[str, str]] = {
         "notfound": "Senzory ZSE sa nenašli (je integrácia načítaná?).",
         "c_pay_year": "Platby, vrátenia a netto za rok (kliknutím na legendu zobrazíte/skryjete)",
         "c_cons_year": "Spotreba za rok (kWh)",
+        "c_cons_period": "Spotreba plynu za zúčtovacie obdobie (kWh), v roku, v ktorom obdobie končí",
+        "t_period_note": "Portál udáva plyn za zúčtovacie obdobie, preto sa obdobie počíta do roku, v ktorom končí.",
         "c_cons_month": "Spotreba za mesiac (kWh, posledné 3 roky)",
+        "c_total": "Náklady na energie za rok: netto zaplatené, elektrina + plyn",
+        "k_electricity": "Elektrina",
+        "k_gas": "Plyn",
+        "t_total": "Spolu",
         "t_intro": (
             "Tu vidíte po rokoch, koľko ste zaplatili ZSE a koľko sa vám vrátilo:\n\n"
             "- **Platby**: všetko, čo ste v danom roku zaplatili: mesačné zálohy a prípadný doplatok z vyúčtovania.\n"
             "- **Vrátené**: čo vám ZSE vrátila po ročnom vyúčtovaní (preplatok).\n"
-            "- **Netto (náklad)**: Platby mínus Vrátené. Toľko vás elektrina v danom roku skutočne stála."
+            "- **Netto (náklad)**: Platby mínus Vrátené. Toľko vás energia v danom roku skutočne stála."
         ),
         "c_year": "Rok", "c_paid": "Platby", "c_ref": "Vrátené", "c_net": "Netto (náklad)",
         "ongoing": "prebieha", "partial": "od začiatku dát",

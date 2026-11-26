@@ -43,9 +43,22 @@ class ZseEntity(CoordinatorEntity[ZseCoordinator]):
         return (data.get("accounts") or {}).get(self._scope)
 
     @property
+    def _kinds(self) -> list[str]:
+        """Commodities this entity is about: ``["electricity"]``, ``["gas"]`` ... (partner level: all of its accounts)."""
+        data = self.coordinator.data or {}
+        if self._scope == PARTNER_SCOPE:
+            return sorted({a["kind"] for a in (data.get("accounts") or {}).values() if a.get("kind")})
+        return [(self._account or {}).get("kind") or "other"]
+
+    @property
+    def _zse_attrs(self) -> dict[str, Any]:
+        # lets templates/dashboards find an entity regardless of its (translated) entity id and tell
+        # electricity from gas when several accounts are set up
+        return {"zse_key": self._zse_key, "zse_kinds": self._kinds}
+
+    @property
     def extra_state_attributes(self) -> dict[str, Any] | None:
-        # "zse_key" lets templates/dashboards find an entity regardless of its (translated) entity id
-        return {"zse_key": self._zse_key}
+        return self._zse_attrs
 
     @property
     def available(self) -> bool:

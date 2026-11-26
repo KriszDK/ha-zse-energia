@@ -15,7 +15,7 @@ from .api import ZseAuthError, ZseClient, ZseError, async_fetch_raw
 from .const import CONF_SCAN_HOURS, DEFAULT_SCAN_HOURS, DOMAIN
 from .hdo_manager import HdoManager
 from .parser import build
-from .statistics import async_import_history
+from .statistics import async_import_history, async_import_total
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -38,6 +38,7 @@ class ZseCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         )
         self.client = client
         self.hdo = HdoManager(hass)
+        self._reset_done = False
 
     async def _async_update_data(self) -> dict[str, Any]:
         try:
@@ -49,5 +50,24 @@ class ZseCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         data = build(raw, dt_util.now().date())
         several = len(data["accounts"]) > 1
         for zu, account in data["accounts"].items():
-            async_import_history(self.hass, zu, account["history"], suffix=several)
+            async_import_history(
+                self.hass,
+                zu,
+                account["history"],
+                suffix=several,
+                kind=account.get("kind", "electricity"),
+                reset_gas_consumption=not self._reset_done,
+            )
+        self._reset_done = True
+        self._import_total(data)
         return data
+
+    def _import_total(self, own: dict[str, Any]) -> None:
+        """Net payments of all contract accounts of all ZSE logins added together (own data is the fresh one)."""
+        histories = [a["history"] for a in own["accounts"].values()]
+        for entry in self.hass.config_entries.async_entries(DOMAIN):
+            other = getattr(entry, "runtime_data", None)
+            if other is not None and other is not self and getattr(other, "data", None):
+                histories += [a["history"] for a in other.data["accounts"].values()]
+        if len(histories) > 1:
+            async_import_total(self.hass, histories)

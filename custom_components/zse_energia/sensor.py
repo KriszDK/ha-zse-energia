@@ -10,7 +10,7 @@ from homeassistant.components.sensor import (
     SensorEntity,
     SensorEntityDescription,
 )
-from homeassistant.const import EntityCategory, UnitOfElectricCurrent, UnitOfEnergy, UnitOfTime
+from homeassistant.const import EntityCategory, UnitOfElectricCurrent, UnitOfEnergy, UnitOfTime, UnitOfVolume
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -313,6 +313,60 @@ PARTNER_SENSORS: tuple[ZseSensorDescription, ...] = (
 )
 
 
+# Sensors that only make sense for one commodity (everything else is created for every account)
+ELECTRICITY_ONLY = frozenset(
+    {
+        "tariffication",
+        "hdo_code",
+        "phases",
+        "circuit_breaker",
+        "consumption_latest_month",
+        "consumption_monthly_average",
+    }
+)
+
+GAS_SENSORS: tuple[ZseSensorDescription, ...] = (
+    ZseSensorDescription(
+        key="gas_consumption_last",
+        translation_key="gas_consumption_last",
+        device_class=SensorDeviceClass.ENERGY,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
+        suggested_display_precision=0,
+        value_fn=lambda a: a.get("gas_consumption_last"),
+        attrs_fn=lambda a: {
+            "period_from": a.get("gas_consumption_last_from"),
+            "period_to": a.get("gas_consumption_last_to"),
+            "volume_m3": a.get("gas_consumption_last_m3"),
+            "periods": a.get("gas_periods"),
+        },
+    ),
+    ZseSensorDescription(
+        key="expected_consumption",
+        translation_key="expected_consumption",
+        device_class=SensorDeviceClass.ENERGY,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
+        suggested_display_precision=0,
+        value_fn=lambda a: a.get("expected_consumption_kwh"),
+        attrs_fn=lambda a: {"volume_m3": a.get("expected_consumption_m3")},
+    ),
+    ZseSensorDescription(
+        key="meter_reading",
+        translation_key="meter_reading",
+        device_class=SensorDeviceClass.GAS,
+        native_unit_of_measurement=UnitOfVolume.CUBIC_METERS,
+        suggested_display_precision=0,
+        value_fn=lambda a: a.get("meter_reading") if a.get("meter_reading_unit") in (None, "m3") else None,
+        attrs_fn=lambda a: {"reading_date": a.get("meter_reading_date")},
+    ),
+    ZseSensorDescription(
+        key="price_list",
+        translation_key="price_list",
+        value_fn=lambda a: a.get("price_list"),
+        attrs_fn=lambda a: {"usage": a.get("gas_use")},
+    ),
+)
+
+
 class ZseSensor(ZseEntity, SensorEntity):
     """A ZSE value."""
 
@@ -337,7 +391,7 @@ class ZseSensor(ZseEntity, SensorEntity):
             return None
         extra = fn(account) if fn else {}
         # "zse_key" lets templates/dashboards find a sensor regardless of its (translated) entity id
-        return {"zse_key": self.entity_description.key, **{k: v for k, v in extra.items() if v is not None}}
+        return {**self._zse_attrs, **{k: v for k, v in extra.items() if v is not None}}
 
 
 class ZseLanguageSensor(ZseEntity, SensorEntity):
@@ -359,7 +413,7 @@ class ZseLanguageSensor(ZseEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        return {"zse_key": "ui", "t": TEXTS[self.native_value]}
+        return {**self._zse_attrs, "t": TEXTS[self.native_value]}
 
 
 class ZseNextTariffChangeSensor(ZseHdoEntity, SensorEntity):
@@ -378,7 +432,7 @@ class ZseNextTariffChangeSensor(ZseHdoEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        return {"zse_key": "next_tariff_change"}
+        return self._zse_attrs
 
 
 class ZseHighTariffHoursSensor(ZseHdoEntity, SensorEntity):
@@ -399,7 +453,7 @@ class ZseHighTariffHoursSensor(ZseHdoEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        return {"zse_key": "high_tariff_hours_today"}
+        return self._zse_attrs
 
 
 class ZseHdoDataSensor(ZseEntity, SensorEntity):
@@ -425,7 +479,7 @@ class ZseHdoDataSensor(ZseEntity, SensorEntity):
     def extra_state_attributes(self) -> dict[str, Any]:
         hdo = self.coordinator.hdo
         return {
-            "zse_key": "hdo_data",
+            **self._zse_attrs,
             "downloaded_at": hdo.downloaded_at.isoformat() if hdo.downloaded_at else None,
             "last_attempt": hdo.last_attempt.isoformat() if hdo.last_attempt else None,
             "error": hdo.error,
@@ -448,7 +502,14 @@ async def async_setup_entry(
     if any(_has_hdo(a) for a in accounts.values()):
         entities.append(ZseHdoDataSensor(coordinator))
     for zu, account in accounts.items():
-        entities += [ZseSensor(coordinator, zu, d) for d in ACCOUNT_SENSORS]
+        kind = account.get("kind")
+        entities += [
+            ZseSensor(coordinator, zu, d)
+            for d in ACCOUNT_SENSORS
+            if kind == "electricity" or d.key not in ELECTRICITY_ONLY
+        ]
+        if kind == "gas":
+            entities += [ZseSensor(coordinator, zu, d) for d in GAS_SENSORS]
         if _has_hdo(account):
             entities += [ZseNextTariffChangeSensor(coordinator, zu), ZseHighTariffHoursSensor(coordinator, zu)]
     async_add_entities(entities)
