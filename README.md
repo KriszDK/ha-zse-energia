@@ -117,3 +117,7 @@ python tools/check_live.py                  # sign in for real, print what the s
 ```
 
 `custom_components/zse_energia/api.py` and `parser.py` have no Home Assistant imports, so they can be exercised on their own.
+
+## License
+
+[MIT](LICENSE). Unofficial project, not affiliated with ZSE.
