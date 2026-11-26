@@ -9,7 +9,7 @@ All texts come from the integration's "Dashboard language" sensor (attribute ``t
 The dashboards need no editing: the statistic ids are made of the series and the kind of contract
 (``zse_energia:net_paid_electricity``), see ``custom_components/zse_energia/stat_ids.py``.
 ``--personal-dir`` also writes the author's own variant of the combined dashboard (Hungarian labels,
-folding chart blocks that need the HACS card ``expander-card``) and plain copies of the other two there.
+folding chart blocks that need the Marketplace (HACS) card ``expander-card``) and plain copies of the other two there.
 """
 from __future__ import annotations
 
@@ -354,7 +354,7 @@ class Builder:
 
     @staticmethod
     def folding(head: str, body: str) -> str:
-        """A card with ``head`` always visible; a click on it folds ``body`` out (HACS: expander-card).
+        """A card with ``head`` always visible; a click on it folds ``body`` out (Marketplace (HACS): expander-card).
 
         ``head`` is one grid card, ``body`` any number of them (indent 10); they are nested one level deeper.
         """
@@ -534,7 +534,7 @@ def build_combined(labels: tuple[str, str, str], charts_title: str, expander: bo
                 + section(g_label, "fire", gs.charts_cards())
                 + section(t_label, "cash-multiple", total_cards)
             )
-        # one full-width section with three folding blocks (HACS: expander-card), all closed at first
+        # one full-width section with three folding blocks (Marketplace (HACS): expander-card), all closed at first
 
         def fold(label: str, icon_name: str, cards: str) -> str:
             # a markdown card is a thick, button-like header (a heading card is only one line high)
