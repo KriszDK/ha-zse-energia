@@ -31,6 +31,8 @@ _SETTINGS_RE = re.compile(r"var SETTINGS = (\{.*?\});\s*</script>", re.S)
 _TOKEN_MARGIN = 300  # renew the token this many seconds before it expires
 _PAGE_SIZE = 50
 _MAX_PAGES = 6
+# never sent anywhere but the HTTPS origin they were meant for (see _redirect_headers)
+_SENSITIVE_HEADERS = frozenset({"authorization", "x-csrf-token"})
 
 
 class ZseError(Exception):
@@ -72,6 +74,17 @@ def _jwt_exp(token: str) -> float | None:
         return None
 
 
+def _redirect_headers(headers: dict[str, str], src: URL, dst: URL) -> dict[str, str]:
+    """Headers to keep when following a redirect from ``src`` to ``dst``.
+
+    The bearer token and the CSRF token stay only on the same HTTPS origin; a redirect to
+    another host or to plain HTTP gets the request without them.
+    """
+    if dst.scheme == "https" and dst.origin() == src.origin():
+        return dict(headers)
+    return {k: v for k, v in headers.items() if k.lower() not in _SENSITIVE_HEADERS}
+
+
 class ZseClient:
     """Signs in and calls the portal API.
 
@@ -93,6 +106,8 @@ class ZseClient:
 
     # ------------------------------------------------------------------ http
     def _cookie_header(self, url: URL) -> str | None:
+        if url.scheme != "https":  # the sign-in cookies never travel unencrypted
+            return None
         jar = self._cookies.get(url.host or "", {})
         return "; ".join(f"{k}={v}" for k, v in jar.items()) or None
 
@@ -129,7 +144,9 @@ class ZseClient:
             location = resp_headers.get("Location")
             if follow and status in (301, 302, 303, 307, 308) and location:
                 nxt = URL(location, encoded=True)
-                url = nxt if nxt.is_absolute() else url.join(nxt)
+                nxt = nxt if nxt.is_absolute() else url.join(nxt)
+                extra_headers = _redirect_headers(extra_headers, url, nxt)
+                url = nxt
                 method, kwargs = "GET", {}
                 continue
             return status, resp_headers, text

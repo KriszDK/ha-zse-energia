@@ -96,7 +96,7 @@ def extract_rates(html: str) -> list[dict[str, Any]]:
             raise HdoParseError(f"{name} not found")
         try:
             value, _ = _parse_value(html, m.end() - 1)
-        except (IndexError, ValueError) as err:
+        except (IndexError, ValueError, RecursionError) as err:  # RecursionError: absurdly deep nesting
             raise HdoParseError(f"{name}: {err}") from err
         programs += [p for p in value if isinstance(p, dict) and "code" in p and "intervals" in p]
     if len(programs) < 10:
