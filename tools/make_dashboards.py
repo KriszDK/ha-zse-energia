@@ -4,10 +4,12 @@ All texts come from the integration's "Dashboard language" sensor (attribute ``t
 ``custom_components/zse_energia/texts.py``), so one dashboard follows the Home Assistant language.
 
     python tools/make_dashboards.py
-    python tools/make_dashboards.py --zu-electricity 6300000001 --zu-gas 6300000002 --personal-dir ..
+    python tools/make_dashboards.py --personal-dir ..
 
-Without arguments only the generic files (``__ZU__`` placeholder) are written. With ``--zu-*`` and
-``--personal-dir`` copies with your account numbers are written there too: keep those private.
+The dashboards need no editing: the statistic ids are made of the series and the kind of contract
+(``zse_energia:net_paid_electricity``), see ``custom_components/zse_energia/stat_ids.py``.
+``--personal-dir`` also writes the author's own variant of the combined dashboard (Hungarian labels,
+folding chart blocks that need the HACS card ``expander-card``) and plain copies of the other two there.
 """
 from __future__ import annotations
 
@@ -24,10 +26,7 @@ HEADER = """# ZSE Energia - ready-made dashboard for {what} ("sections" layout, 
 # reload the integration (or restart Home Assistant) once.
 #
 # How to use
-#   1. Replace every  __ZU__  with the number of the {what} contract account (the "variable symbol" on its
-#      invoices, 10 digits). It is part of the statistic ids, e.g. zse_energia:advances_paid_6300000001.
-#      PowerShell:  (Get-Content {file}) -replace '__ZU__','6300000001' | Set-Content zse_mine.yaml
-#   2. Settings -> Dashboards -> Add dashboard -> New dashboard from scratch -> open it -> pencil ->
+#   1. Settings -> Dashboards -> Add dashboard -> New dashboard from scratch -> open it -> pencil ->
 #      three dots -> "Raw configuration editor" and paste the whole file.
 #
 # The charts read long-term STATISTICS (written by the integration), so they show the whole history.
@@ -103,9 +102,8 @@ def icon(name: str, text_expr: str) -> str:
 
 
 class Builder:
-    def __init__(self, kind: str, zu: str = "__ZU__") -> None:
+    def __init__(self, kind: str) -> None:
         self.kind = kind
-        self.zu = zu  # placeholder of the contract-account number in the statistic ids
 
     # ------------------------------------------------------------------------------------ plumbing
     def md(self, body: str, *, ids: bool = False, hist: bool = False) -> str:
@@ -123,7 +121,7 @@ class Builder:
 
     def chart(self, entities, *, kind, period, days, stat="change", legend="") -> str:
         ents = "".join(
-            f"              - entity: zse_energia:{k}_{self.zu}\n                color: '{c}'\n" for k, c in entities
+            f"              - entity: zse_energia:{k}_{self.kind}\n                color: '{c}'\n" for k, c in entities
         )
         return (
             "          - type: statistics-graph\n"
@@ -490,9 +488,7 @@ COMBINED_HEADER = """# ZSE Energia - ready-made dashboard: electricity and gas i
 # login with both contracts. Texts follow the Home Assistant language.
 #
 # How to use
-#   1. Replace  __ZU_E__  with the electricity and  __ZU_G__  with the gas contract-account number
-#      (10 digits, the variable symbol on the invoices).
-#   2. Settings -> Dashboards -> Add dashboard -> New dashboard from scratch -> open it -> pencil ->
+#   1. Settings -> Dashboards -> Add dashboard -> New dashboard from scratch -> open it -> pencil ->
 #      three dots -> "Raw configuration editor" and paste the whole file.
 #
 # If a statistics chart is empty: Developer tools -> Statistics -> look for "zse_energia:" entries.
@@ -501,7 +497,7 @@ COMBINED_HEADER = """# ZSE Energia - ready-made dashboard: electricity and gas i
 
 def build_combined(labels: tuple[str, str, str], charts_title: str, expander: bool = False) -> str:
     """Electricity and gas on the same views; charts in a view of their own."""
-    el, gs = Builder("electricity", "__ZU_E__"), Builder("gas", "__ZU_G__")
+    el, gs = Builder("electricity"), Builder("gas")
 
     def section(label: str, icon_name: str, cards: str, color: str | None = None) -> str:
         text = (
@@ -525,8 +521,8 @@ def build_combined(labels: tuple[str, str, str], charts_title: str, expander: bo
         "          - type: statistics-graph\n            chart_type: bar-stack\n            period: year\n"
         "            days_to_show: 7000\n            stat_types:\n              - change\n"
         "            expand_legend: true\n            entities:\n"
-        f"              - entity: zse_energia:net_paid___ZU_E__\n                name: {e_label}\n                color: '#e0803d'\n"
-        f"              - entity: zse_energia:net_paid___ZU_G__\n                name: {g_label}\n                color: '#e5533d'\n"
+        f"              - entity: zse_energia:net_paid_electricity\n                name: {e_label}\n                color: '#e0803d'\n"
+        f"              - entity: zse_energia:net_paid_gas\n                name: {g_label}\n                color: '#e5533d'\n"
     )
     total_cards = Builder("electricity").title_card("chart-bar", "T.c_total") + total
 
@@ -574,35 +570,28 @@ def build_combined(labels: tuple[str, str, str], charts_title: str, expander: bo
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--zu-electricity", help="electricity contract-account number (for the private copy)")
-    parser.add_argument("--zu-gas", help="gas contract-account number (for the private copy)")
-    parser.add_argument("--personal-dir", type=pathlib.Path, help="where to write the private copies")
+    parser.add_argument("--personal-dir", type=pathlib.Path, help="where to write the author's own copies")
     args = parser.parse_args()
 
     combined = build_combined(("Electricity", "Gas", "Total"), "Charts")
     (DASH_DIR / "zse_dashboard_combined.yaml").write_text(combined, encoding="utf-8", newline="\n")
     print("written zse_dashboard_combined.yaml", len(combined), "chars")
-    if args.zu_electricity and args.zu_gas and args.personal_dir:
+    if args.personal_dir:
         mine = build_combined(("Villany", "Gáz", "Összesen"), "Grafikonok", expander=True)
-        mine = mine.replace("__ZU_E__", args.zu_electricity).replace("__ZU_G__", args.zu_gas)
         path = args.personal_dir / "zse_dashboard_personal_combined.yaml"
         path.write_text(mine, encoding="utf-8", newline="\n")
         print("written", path)
 
-    for kind, name, zu in (
-        ("electricity", "zse_dashboard.yaml", args.zu_electricity),
-        ("gas", "zse_dashboard_gas.yaml", args.zu_gas),
+    for kind, name, personal_name in (
+        ("electricity", "zse_dashboard.yaml", "zse_dashboard_personal_electricity.yaml"),
+        ("gas", "zse_dashboard_gas.yaml", "zse_dashboard_personal_gas.yaml"),
     ):
         text = Builder(kind).build(name)
         (DASH_DIR / name).write_text(text, encoding="utf-8", newline="\n")
         print("written", name, len(text), "chars")
-        if zu and args.personal_dir:
-            stem = name.removesuffix(".yaml").replace("zse_dashboard", "zse_dashboard_personal")
-            if kind == "electricity":
-                stem += "_electricity"
-            personal = args.personal_dir / (stem + ".yaml")
-            personal.write_text(text.replace("__ZU__", zu), encoding="utf-8", newline="\n")
-            print("written", personal)
+        if args.personal_dir:
+            (args.personal_dir / personal_name).write_text(text, encoding="utf-8", newline="\n")
+            print("written", args.personal_dir / personal_name)
 
 
 if __name__ == "__main__":

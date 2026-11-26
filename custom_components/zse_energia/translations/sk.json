@@ -1,0 +1,179 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ZSE Energia (neoficiálna)",
+        "description": "Prihláste sa e-mailovým účtom zákazníckej zóny ZSE (zse.sk). Účty Google/Facebook nie sú podporované.",
+        "data": {
+          "email": "E-mail",
+          "password": "Heslo"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Opätovné prihlásenie",
+        "description": "Portál ZSE odmietol uložené heslo pre {email}. Zadajte aktuálne heslo.",
+        "data": {
+          "password": "Heslo"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "E-mail alebo heslo bolo odmietnuté.",
+      "cannot_connect": "Portál ZSE nie je dostupný.",
+      "portal_changed": "Portál ZSE odpovedal neočakávane (možno sa zmenil). Pozrite si záznam (log).",
+      "unknown": "Neočakávaná chyba. Pozrite si záznam (log)."
+    },
+    "abort": {
+      "already_configured": "Tento účet ZSE je už nastavený.",
+      "wrong_account": "E-mail patrí inému účtu ZSE, než je nastavený."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Nastavenia ZSE Energia",
+        "data": {
+          "scan_hours": "Interval aktualizácie (hodiny)",
+          "hdo_winter_time": "Moje zariadenie HDO používa celoročne zimný čas (v lete prepína tarifu o hodinu neskôr)",
+          "statistics_with_account_number": "Pridať číslo zmluvného účtu do identifikátorov štatistík (potrebné len pri viacerých zmluvách rovnakého druhu)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "next_payment_date": {
+        "name": "Najbližší termín platby"
+      },
+      "next_payment_amount": {
+        "name": "Suma najbližšej platby"
+      },
+      "next_invoice_date": {
+        "name": "Ďalšia zálohová faktúra"
+      },
+      "advance_amount": {
+        "name": "Mesačná záloha"
+      },
+      "payment_method": {
+        "name": "Spôsob platby"
+      },
+      "tariff": {
+        "name": "Tarifa"
+      },
+      "last_settlement_amount": {
+        "name": "Suma posledného vyúčtovania"
+      },
+      "last_settlement_date": {
+        "name": "Dátum posledného vyúčtovania"
+      },
+      "next_settlement": {
+        "name": "Ďalšie ročné vyúčtovanie"
+      },
+      "last_payment_date": {
+        "name": "Posledná prijatá platba"
+      },
+      "consumption_latest_month": {
+        "name": "Spotreba, posledný mesiac"
+      },
+      "consumption_monthly_average": {
+        "name": "Spotreba, 12-mesačný priemer"
+      },
+      "to_pay": {
+        "name": "Suma na úhradu"
+      },
+      "overdue_amount": {
+        "name": "Suma po splatnosti"
+      },
+      "overpayment": {
+        "name": "Preplatok"
+      },
+      "advance_due_day": {
+        "name": "Deň splatnosti zálohy (v mesiaci)"
+      },
+      "contract_valid_from": {
+        "name": "Zmluva platná od"
+      },
+      "distribution_tariff": {
+        "name": "Distribučná sadzba"
+      },
+      "tariffication": {
+        "name": "Tarifikácia"
+      },
+      "hdo_code": {
+        "name": "Kód HDO"
+      },
+      "phases": {
+        "name": "Fázy"
+      },
+      "circuit_breaker": {
+        "name": "Hlavný istič"
+      },
+      "distributor": {
+        "name": "Distribútor"
+      },
+      "paid_this_year": {
+        "name": "Zaplatené tento rok"
+      },
+      "refunds_this_year": {
+        "name": "Vrátené tento rok"
+      },
+      "paid_total": {
+        "name": "Zaplatené spolu"
+      },
+      "refunds_total": {
+        "name": "Vrátené spolu"
+      },
+      "net_paid_total": {
+        "name": "Zaplatené netto spolu"
+      },
+      "ui_language": {
+        "name": "Jazyk dashboardu"
+      },
+      "next_tariff_change": {
+        "name": "Ďalšia zmena tarify"
+      },
+      "high_tariff_hours_today": {
+        "name": "Hodiny vysokej tarify dnes"
+      },
+      "hdo_data": {
+        "name": "Údaje tarifnej tabuľky (HDO)",
+        "state": {
+          "up_to_date": "Aktuálne",
+          "built_in": "Vstavaná kópia",
+          "error": "Aktualizácia zlyhala"
+        }
+      },
+      "gas_consumption_last": {
+        "name": "Spotreba plynu, posledné zúčtovacie obdobie"
+      },
+      "expected_consumption": {
+        "name": "Predpokladaná ročná spotreba"
+      },
+      "meter_reading": {
+        "name": "Posledný stav merača"
+      },
+      "price_list": {
+        "name": "Cenník"
+      }
+    },
+    "binary_sensor": {
+      "overdue": {
+        "name": "Platba po splatnosti"
+      },
+      "payment_pending": {
+        "name": "Faktúra čaká na úhradu"
+      },
+      "e_invoice": {
+        "name": "Elektronická faktúra zapnutá"
+      },
+      "low_tariff": {
+        "name": "Nízka tarifa aktívna"
+      }
+    },
+    "calendar": {
+      "tariff_calendar": {
+        "name": "Nízka / vysoká tarifa"
+      }
+    }
+  }
+}

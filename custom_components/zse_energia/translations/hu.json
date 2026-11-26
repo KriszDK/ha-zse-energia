@@ -34,7 +34,8 @@
         "title": "ZSE Energia beállítások",
         "data": {
           "scan_hours": "Frissítési időköz (óra)",
-          "hdo_winter_time": "A HDO készülékem egész évben téli időt használ (nyáron egy órával később vált a tarifa)"
+          "hdo_winter_time": "A HDO készülékem egész évben téli időt használ (nyáron egy órával később vált a tarifa)",
+          "statistics_with_account_number": "A szerződéses számla száma kerüljön a statisztikák azonosítójába (csak azonos fajtájú több szerződésnél kell)"
         }
       }
     }

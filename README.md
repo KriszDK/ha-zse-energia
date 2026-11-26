@@ -29,7 +29,7 @@ Partner level, device **ZSE account**: amount to pay, overdue amount, overpaymen
 
 ## Payment statistics and charts
 
-The portal keeps the whole invoice history (about 15 years). On every update the integration works out what was **actually paid and refunded** and writes it to Home Assistant's long-term statistics (`zse_energia:<series>_<account number>`), so charts reach back to the first invoice:
+The portal keeps the whole invoice history (about 15 years). On every update the integration works out what was **actually paid and refunded** and writes it to Home Assistant's long-term statistics (`zse_energia:<series>_<kind>`, e.g. `zse_energia:net_paid_electricity` or `zse_energia:net_paid_gas`), so charts reach back to the first invoice:
 
 | Statistic | Meaning |
 |---|---|
@@ -42,7 +42,7 @@ The portal keeps the whole invoice history (about 15 years). On every update the
 
 Each is a cumulative sum, so the *statistics graph* card shows yearly or monthly totals with `stat_types: change`. Sensors: *Paid this year*, *Refunds this year*, *Paid / Refunds / Net paid in total* (the last one carries a per-year table as attributes).
 
-A ready-made dashboard is in [`dashboards/zse_dashboard.yaml`](dashboards/zse_dashboard.yaml). Its texts follow the Home Assistant system language (Hungarian, Slovak or English; English for anything else): the integration's *Dashboard language* sensor serves them, so one dashboard fits every language (fixed-language copies are in `dashboards/static-language/`). It contains: overview, this/last year, yearly and monthly charts, running totals, consumption and a yearly table. Paste it into a dashboard's raw configuration (replace `__ZU__` with your account number first).
+A ready-made dashboard is in [`dashboards/zse_dashboard.yaml`](dashboards/zse_dashboard.yaml). Its texts follow the Home Assistant system language (English, Slovak or Hungarian; English for anything else): the integration's *Dashboard language* sensor serves them, so one dashboard fits every language. It contains: overview, this/last year, yearly and monthly charts, running totals, consumption and a yearly table. Paste it into a dashboard's raw configuration: nothing needs to be edited (the statistic names are the same for everybody, see below for several contracts of one kind).
 
 How items are counted: an invoice counts when it has been paid (part-paid items count for the paid part), on the date of its last payment (due date if the portal lists no payment). Positive amounts are payments, negative ones refunds/credits. The integration cannot tell what an "Akonto" item or a corrective invoice economically is — they are counted by sign only.
 
@@ -63,7 +63,25 @@ Everything about payments, advances, settlements and the payment statistics is t
 
 Gas is billed per period (usually a year) and the portal gives no monthly gas data. The consumption statistic therefore holds one value per billing period, on the last day of the period, exactly as the portal reports it (nothing is spread or estimated), so the yearly chart shows the period that ended in that year and there is no monthly gas chart. The kWh and m³ values are the ones the portal bills (nothing is converted by the integration). HDO/tariff entities, phases and the monthly consumption series exist for electricity only. The dashboards pick the entities of their own commodity (`zse_dashboard.yaml` for electricity, `zse_dashboard_gas.yaml` for gas), also when both are set up. `python tools/make_dashboards.py` regenerates them.
 
-If both are set up, [`dashboards/zse_dashboard_combined.yaml`](dashboards/zse_dashboard_combined.yaml) shows electricity and gas side by side in one dashboard (replace `__ZU_E__` and `__ZU_G__` with the two account numbers). Its last chart is a stacked bar chart of the net amount paid per year: electricity and gas on top of each other, so the bar height is the total. The sum is also available as the statistic `zse_energia:energy_net_paid` (for your own cards), which the integration writes as soon as two contract accounts are loaded (also from two ZSE logins).
+If both are set up, [`dashboards/zse_dashboard_combined.yaml`](dashboards/zse_dashboard_combined.yaml) shows electricity and gas side by side in one dashboard. Its last chart is a stacked bar chart of the net amount paid per year: electricity and gas on top of each other, so the bar height is the total. The sum is also available as the statistic `zse_energia:energy_net_paid` (for your own cards), which the integration writes as soon as two contract accounts are loaded (also from two ZSE logins).
+
+## Several contracts of the same kind
+
+The ready-made dashboards expect one electricity and one gas contract (the usual case, also when they are under two logins) and need no editing.
+
+If you have **two or more contract accounts of the same kind** (for example two electricity meters), their statistics must not share one name. The integration then adds the account number to the statistic names by itself when they are under one login (`zse_energia:net_paid_electricity_6300000001`). If they are under **different logins**, switch on *Put the account number into the statistic ids* in the options of **each** entry (*Settings → Devices & services → ZSE Energia → Configure*), because the integration cannot know about the other login at start-up.
+
+Then:
+
+1. Copy a dashboard file once per contract.
+2. In the copy, add `_<account number>` (the 10-digit number on the invoices) to the end of every `zse_energia:...` statistic, for example `zse_energia:net_paid_electricity` becomes `zse_energia:net_paid_electricity_6300000001`. A text editor's *Replace* does it: replace `_electricity` with `_electricity_6300000001` (gas: `_gas`).
+3. Paste the copy into its own dashboard (raw configuration editor).
+
+The statistics of earlier names are removed at the next start and rebuilt from the portal history under the new names; nothing is lost. The text cards of a dashboard always show the *first* contract of their kind; showing the others needs a hand-edited dashboard.
+
+**Slovensky.** Hotové dashboardy počítajú s jednou zmluvou na elektrinu a jednou na plyn (bežný prípad, aj keď sú pod dvoma prihláseniami) a netreba v nich nič upravovať. Ak máte **dva alebo viac zmluvných účtov rovnakého druhu** (napr. dva elektromery), integrácia pridá číslo zmluvného účtu do názvov štatistík sama, ak sú pod jedným prihlásením (`zse_energia:net_paid_electricity_6300000001`). Ak sú pod **rôznymi prihláseniami**, zapnite v nastaveniach **každého** záznamu voľbu *Pridať číslo zmluvného účtu do identifikátorov štatistík* (*Nastavenia → Zariadenia a služby → ZSE Energia → Konfigurovať*). Potom skopírujte dashboard pre každú zmluvu a v kópii pripíšte `_<číslo zmluvného účtu>` na koniec každej štatistiky `zse_energia:...` (napr. v textovom editore nahraďte `_electricity` za `_electricity_6300000001`, pri plyne `_gas`). Štatistiky pod starými názvami sa pri ďalšom štarte odstránia a znovu vytvoria z histórie portálu pod novými názvami. Textové karty vždy ukazujú *prvú* zmluvu daného druhu.
+
+**Magyarul.** A kész dashboardok egy villany- és egy gázszerződésre számítanak (ez a szokásos eset, két bejelentkezés esetén is), és semmit nem kell bennük szerkeszteni. Ha **ugyanabból a fajtából két vagy több szerződéses számlád** van (például két villanyóra), az integráció maga hozzáteszi a számlaszámot a statisztikák nevéhez, ha egy bejelentkezés alatt vannak (`zse_energia:net_paid_electricity_6300000001`). Ha **különböző bejelentkezések** alatt vannak, kapcsold be **mindegyik** bejegyzés beállításaiban a *A szerződéses számla száma kerüljön a statisztikák azonosítójába* opciót (*Beállítások → Eszközök és szolgáltatások → ZSE Energia → Beállítás*). Ezután másold le a dashboardot szerződésenként, és a másolatban minden `zse_energia:...` statisztika végére írd oda a `_<szerződéses számla száma>` részt (szövegszerkesztőben például `_electricity` → `_electricity_6300000001`, gáznál `_gas`). A régi nevű statisztikák a következő indításkor törlődnek, és a portál előzményeiből újra létrejönnek az új nevek alatt. A szöveges kártyák mindig az adott fajta *első* szerződését mutatják.
 
 ## Low / high tariff (HDO)
 

@@ -6,10 +6,7 @@
 # reload the integration (or restart Home Assistant) once.
 #
 # How to use
-#   1. Replace every  __ZU__  with the number of the gas contract account (the "variable symbol" on its
-#      invoices, 10 digits). It is part of the statistic ids, e.g. zse_energia:advances_paid_6300000001.
-#      PowerShell:  (Get-Content zse_dashboard_gas.yaml) -replace '__ZU__','6300000001' | Set-Content zse_mine.yaml
-#   2. Settings -> Dashboards -> Add dashboard -> New dashboard from scratch -> open it -> pencil ->
+#   1. Settings -> Dashboards -> Add dashboard -> New dashboard from scratch -> open it -> pencil ->
 #      three dots -> "Raw configuration editor" and paste the whole file.
 #
 # The charts read long-term STATISTICS (written by the integration), so they show the whole history.
@@ -189,15 +186,15 @@ views:
               - change
             expand_legend: true
             entities:
-              - entity: zse_energia:advances_paid___ZU__
+              - entity: zse_energia:advances_paid_gas
                 color: '#3d7ee0'
-              - entity: zse_energia:settlements_paid___ZU__
+              - entity: zse_energia:settlements_paid_gas
                 color: '#e0803d'
-              - entity: zse_energia:other_paid___ZU__
+              - entity: zse_energia:other_paid_gas
                 color: '#9b9b9b'
-              - entity: zse_energia:refunds_received___ZU__
+              - entity: zse_energia:refunds_received_gas
                 color: '#2e9e5b'
-              - entity: zse_energia:net_paid___ZU__
+              - entity: zse_energia:net_paid_gas
                 color: '#7a4de0'
           - type: markdown
             content: |
@@ -218,7 +215,7 @@ views:
               - change
             hide_legend: true
             entities:
-              - entity: zse_energia:consumption___ZU__
+              - entity: zse_energia:consumption_gas
                 color: '#e0c23d'
           - type: markdown
             content: |

@@ -20,6 +20,7 @@ from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN
 from .parser import cumulative
+from .stat_ids import obsolete_object_ids, object_id
 
 try:  # Home Assistant 2025.4+
     from homeassistant.components.recorder.models import StatisticMeanType
@@ -74,9 +75,9 @@ SERIES: dict[str, tuple[dict[str, str], str, tuple[str | None, ...]]] = {
 GAS_CONSUMPTION_NAMES = {"en": "Gas consumption", "hu": "Gázfogyasztás", "sk": "Spotreba plynu"}
 
 
-def statistic_id(key: str, zu: str) -> str:
-    """e.g. ``zse_energia:advances_paid_6300000001`` (lowercase, digits, underscores)."""
-    return f"{DOMAIN}:{key}_{zu}"
+def statistic_id(key: str, kind: str, zu: str, with_number: bool) -> str:
+    """e.g. ``zse_energia:advances_paid_electricity`` (with the account number added when ``with_number``)."""
+    return f"{DOMAIN}:{object_id(key, kind, zu, with_number)}"
 
 
 def _noon(d: date) -> datetime:
@@ -84,11 +85,18 @@ def _noon(d: date) -> datetime:
 
 
 def _metadata(
-    key: str, zu: str, name: str, unit: str, unit_class: str | None, suffix: bool = False
+    key: str,
+    kind: str,
+    zu: str,
+    name: str,
+    unit: str,
+    unit_class: str | None,
+    with_number: bool = False,
+    suffix: bool = False,
 ) -> StatisticMetaData:
     meta: dict[str, Any] = {
         "source": DOMAIN,
-        "statistic_id": statistic_id(key, zu),
+        "statistic_id": statistic_id(key, kind, zu, with_number),
         # the last digits of the account number only tell several accounts apart
         "name": f"{name} ({zu[-4:]})" if suffix else name,
         "unit_of_measurement": unit,
@@ -142,13 +150,19 @@ def async_import_total(hass: HomeAssistant, histories: list[dict[str, Any]]) -> 
         _LOGGER.warning("Could not import statistics %s: %s", total_statistic_id(), err)
 
 
+def async_remove_obsolete(hass: HomeAssistant, zu: str, kind: str, with_number: bool) -> None:
+    """Drop the statistics of older naming schemes (before 0.5.0: ``<series>_<account number>``)."""
+    ids = [f"{DOMAIN}:{o}" for o in obsolete_object_ids(list(SERIES), kind, zu, with_number)]
+    get_instance(hass).async_clear_statistics(ids)
+
+
 def async_import_history(
     hass: HomeAssistant,
     zu: str,
     history: dict[str, Any],
     suffix: bool = False,
     kind: str = "electricity",
-    reset_gas_consumption: bool = False,
+    with_number: bool = False,
 ) -> None:
     """(Re)write all statistics of one account. Safe to repeat: rows are upserted by time."""
     lang = hass.config.language.split("-")[0]
@@ -158,9 +172,6 @@ def async_import_history(
         rows = cumulative(points.get(key) or [])
         if key == "consumption" and kind == "gas":
             names = GAS_CONSUMPTION_NAMES
-        if key == "consumption" and kind == "gas" and reset_gas_consumption:
-            # 0.5.0 development builds wrote estimated monthly rows: drop them once, the real ones follow
-            get_instance(hass).async_clear_statistics([statistic_id(key, zu)])
         if not rows:
             continue
         # a zero baseline just before the first row makes the first period's "change" correct
@@ -170,11 +181,15 @@ def async_import_history(
         for unit_class in unit_classes:
             try:
                 async_add_external_statistics(
-                    hass, _metadata(key, zu, names.get(lang, names["en"]), unit, unit_class, suffix), stats
+                    hass,
+                    _metadata(key, kind, zu, names.get(lang, names["en"]), unit, unit_class, with_number, suffix),
+                    stats,
                 )
                 error = None
                 break
             except HomeAssistantError as err:
                 error = err
         if error is not None:
-            _LOGGER.warning("Could not import statistics %s: %s", statistic_id(key, zu), error)
+            _LOGGER.warning(
+                "Could not import statistics %s: %s", statistic_id(key, kind, zu, with_number), error
+            )

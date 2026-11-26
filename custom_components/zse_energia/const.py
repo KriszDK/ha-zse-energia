@@ -8,6 +8,7 @@ CONF_PASSWORD = "password"
 CONF_PARTNER = "partner"
 CONF_SCAN_HOURS = "scan_hours"
 CONF_HDO_WINTER_TIME = "hdo_winter_time"
+CONF_STAT_NUMBER = "statistics_with_account_number"
 
 DEFAULT_SCAN_HOURS = 6
 MIN_SCAN_HOURS = 1

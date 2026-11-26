@@ -27,6 +27,7 @@ from .const import (
     CONF_PASSWORD,
     CONF_HDO_WINTER_TIME,
     CONF_SCAN_HOURS,
+    CONF_STAT_NUMBER,
     DEFAULT_SCAN_HOURS,
     DOMAIN,
     MAX_SCAN_HOURS,
@@ -121,7 +122,7 @@ class ZseConfigFlow(ConfigFlow, domain=DOMAIN):
 
 
 class ZseOptionsFlow(OptionsFlow):
-    """Options: polling interval."""
+    """Options: polling interval, HDO winter time, account number in statistic names."""
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         if user_input is not None:
@@ -129,10 +130,12 @@ class ZseOptionsFlow(OptionsFlow):
                 data={
                     CONF_SCAN_HOURS: int(user_input[CONF_SCAN_HOURS]),
                     CONF_HDO_WINTER_TIME: bool(user_input.get(CONF_HDO_WINTER_TIME, False)),
+                    CONF_STAT_NUMBER: bool(user_input.get(CONF_STAT_NUMBER, False)),
                 }
             )
         current = self.config_entry.options.get(CONF_SCAN_HOURS, DEFAULT_SCAN_HOURS)
         winter = self.config_entry.options.get(CONF_HDO_WINTER_TIME, False)
+        with_number = self.config_entry.options.get(CONF_STAT_NUMBER, False)
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema(
@@ -147,6 +150,7 @@ class ZseOptionsFlow(OptionsFlow):
                         )
                     ),
                     vol.Required(CONF_HDO_WINTER_TIME, default=winter): bool,
+                    vol.Required(CONF_STAT_NUMBER, default=with_number): bool,
                 }
             ),
         )

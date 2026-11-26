@@ -34,7 +34,8 @@
         "title": "ZSE Energia options",
         "data": {
           "scan_hours": "Update interval (hours)",
-          "hdo_winter_time": "My HDO device keeps winter time all year (tariff changes one hour later in summer)"
+          "hdo_winter_time": "My HDO device keeps winter time all year (tariff changes one hour later in summer)",
+          "statistics_with_account_number": "Put the account number into the statistic ids (only needed with several contracts of the same kind)"
         }
       }
     }

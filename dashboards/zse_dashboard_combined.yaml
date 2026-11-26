@@ -5,9 +5,7 @@
 # login with both contracts. Texts follow the Home Assistant language.
 #
 # How to use
-#   1. Replace  __ZU_E__  with the electricity and  __ZU_G__  with the gas contract-account number
-#      (10 digits, the variable symbol on the invoices).
-#   2. Settings -> Dashboards -> Add dashboard -> New dashboard from scratch -> open it -> pencil ->
+#   1. Settings -> Dashboards -> Add dashboard -> New dashboard from scratch -> open it -> pencil ->
 #      three dots -> "Raw configuration editor" and paste the whole file.
 #
 # If a statistics chart is empty: Developer tools -> Statistics -> look for "zse_energia:" entries.
@@ -940,15 +938,15 @@ views:
               - change
             expand_legend: true
             entities:
-              - entity: zse_energia:advances_paid___ZU_E__
+              - entity: zse_energia:advances_paid_electricity
                 color: '#3d7ee0'
-              - entity: zse_energia:settlements_paid___ZU_E__
+              - entity: zse_energia:settlements_paid_electricity
                 color: '#e0803d'
-              - entity: zse_energia:other_paid___ZU_E__
+              - entity: zse_energia:other_paid_electricity
                 color: '#9b9b9b'
-              - entity: zse_energia:refunds_received___ZU_E__
+              - entity: zse_energia:refunds_received_electricity
                 color: '#2e9e5b'
-              - entity: zse_energia:net_paid___ZU_E__
+              - entity: zse_energia:net_paid_electricity
                 color: '#7a4de0'
           - type: markdown
             content: |
@@ -969,7 +967,7 @@ views:
               - change
             hide_legend: true
             entities:
-              - entity: zse_energia:consumption___ZU_E__
+              - entity: zse_energia:consumption_electricity
                 color: '#e0c23d'
           - type: markdown
             content: |
@@ -990,7 +988,7 @@ views:
               - change
             hide_legend: true
             entities:
-              - entity: zse_energia:consumption___ZU_E__
+              - entity: zse_energia:consumption_electricity
                 color: '#e0c23d'
       - type: grid
         cards:
@@ -1017,15 +1015,15 @@ views:
               - change
             expand_legend: true
             entities:
-              - entity: zse_energia:advances_paid___ZU_G__
+              - entity: zse_energia:advances_paid_gas
                 color: '#3d7ee0'
-              - entity: zse_energia:settlements_paid___ZU_G__
+              - entity: zse_energia:settlements_paid_gas
                 color: '#e0803d'
-              - entity: zse_energia:other_paid___ZU_G__
+              - entity: zse_energia:other_paid_gas
                 color: '#9b9b9b'
-              - entity: zse_energia:refunds_received___ZU_G__
+              - entity: zse_energia:refunds_received_gas
                 color: '#2e9e5b'
-              - entity: zse_energia:net_paid___ZU_G__
+              - entity: zse_energia:net_paid_gas
                 color: '#7a4de0'
           - type: markdown
             content: |
@@ -1046,7 +1044,7 @@ views:
               - change
             hide_legend: true
             entities:
-              - entity: zse_energia:consumption___ZU_G__
+              - entity: zse_energia:consumption_gas
                 color: '#e0c23d'
           - type: markdown
             content: |
@@ -1128,9 +1126,9 @@ views:
               - change
             expand_legend: true
             entities:
-              - entity: zse_energia:net_paid___ZU_E__
+              - entity: zse_energia:net_paid_electricity
                 name: Electricity
                 color: '#e0803d'
-              - entity: zse_energia:net_paid___ZU_G__
+              - entity: zse_energia:net_paid_gas
                 name: Gas
                 color: '#e5533d'
