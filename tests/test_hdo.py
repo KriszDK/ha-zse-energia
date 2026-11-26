@@ -57,6 +57,11 @@ class HdoTests(unittest.TestCase):
         with self.assertRaises(hdo.HdoParseError):
             hdo.extract_rates("nothing here")
 
+    def test_absurd_nesting_is_a_parse_error(self) -> None:
+        deep = "var household_rates = " + "[" * 100_000 + "]" * 100_000 + ";"
+        with self.assertRaises(hdo.HdoParseError):
+            hdo.extract_rates(deep)
+
     def test_snapshot_has_all_programs(self) -> None:
         codes = {p["code"] for p in SNAPSHOT}
         self.assertEqual(len(SNAPSHOT), 44)
