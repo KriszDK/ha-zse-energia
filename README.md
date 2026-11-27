@@ -93,10 +93,10 @@ The meter's HDO code (e.g. `659346` = programs 659 and 346) says when the low ta
 
 The states change at the exact switching time (no polling). The table is downloaded about once a month and kept in Home Assistant's storage; if the page is unreachable or its layout changed, the previous data stays in use, the *Tariff table data* sensor shows *Update failed* and a warning is logged. A copy shipped with the integration (`hdo_programs.json`) is the last resort. Supplementary programs without a tariff (like 346, "only with 359/659") do not switch the tariff and are ignored. Option *HDO device keeps winter time all year*: some devices ignore daylight saving, so in summer they switch one hour later by the wall clock.
 
-## Installation (Marketplace (HACS) custom repository)
+## Installation (Marketplace (HACS))
 
-1. Marketplace (HACS) → ⋮ → *Custom repositories* → add this repository, category *Integration*.
-2. Install **ZSE Energia (unofficial)**, restart Home Assistant.
+1. Open the Marketplace (HACS) and search for **ZSE Energia (unofficial)**.
+2. Install it and restart Home Assistant.
 3. *Settings → Devices & services → Add integration → ZSE Energia*, enter the e-mail and password of your ZSE customer zone.
 
 Manual: copy `custom_components/zse_energia` into your Home Assistant `config/custom_components/`.
